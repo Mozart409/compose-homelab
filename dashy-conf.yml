@@ -1,0 +1,252 @@
+appConfig:
+  statusCheck: true
+  statusCheckInterval: 20
+  cssThemes: ["glass", "another-theme"]
+pageInfo:
+  title: Mozart409's Dashy
+sections: # An array of sections
+  - name: Homelab
+    displayData:
+      sortBy: default
+      rows: 5
+      collapsed: false
+      hideForGuests: false
+    items:
+      - title: Tailscale
+        icon: https://login.tailscale.com/favicon.ico
+        url: https://login.tailscale.com/admin/machines
+        target: newtab
+        id: 0_696_tailscale
+      - title: Proxmox
+        description: Proxmox
+        icon: https://proxmox.com/favicon.ico
+        url: https://pve.dropbear-butterfly.ts.net/
+        target: newtab
+        id: 1_696_pve
+      - title: Pi-Hole
+        description: Network-wide Ad Blocking
+        icon: https://rhubarb.dropbear-butterfly.ts.net/admin/img/logo.svg
+        url: https://rhubarb.dropbear-butterfly.ts.net/admin/
+        target: newtab
+        id: 2_696_pihole
+      - title: Homeassistant
+        description: Awaken your home
+        icon: si-homeassistant
+        url: https://homeassistant.dropbear-butterfly.ts.net/lovelace/default_view
+        target: newtab
+        id: 3_696_homeassistant
+    widgets:
+      - type: clock
+        options:
+          format: de-DE
+      - type: iframe
+        options:
+          url: https://wttr.in
+  - name: Productivity
+    items:
+      - title: Proton Mail
+        description: Secure Encrypted Email
+        icon: favicon
+        url: https://mail.protonmail.com/
+        id: 0_1302_protonmail
+      - title: Proton Calendar
+        description: Secure Encrypted Calendar
+        icon: favicon
+        url: https://calendar.proton.me/
+        id: 2_1302_protoncalendar
+      - title: Gmail
+        description: Old Email
+        icon: favicon
+        url: https://gmail.com/
+        id: 1_1302_gmail
+      - title: Google Calendar
+        description: Old Calendar
+        icon: favicon
+        url: https://calendar.google.com/calendar
+        id: 3_1302_googlecalendar
+  - name: Social
+    items:
+      - title: Discord
+        icon: favicon
+        url: https://discord.com/channels/
+        id: 0_603_discord
+      - title: Twitter
+        icon: favicon
+        url: https://twitter.com/
+        id: 1_603_twitter
+      - title: YouTube
+        icon: favicon
+        url: https://youtube.com/
+        id: 2_603_youtube
+      - title: Bluesky
+        icon: favicon
+        url: https://bsky.app/
+        id: 3_603_bluesky
+  - name: Projects
+    items:
+      - title: Fly.io
+        description: Launch Apps Near Users
+        icon: favicon
+        url: https://fly.io/dashboard
+      - title: Railway
+        description: Build your app in minutes
+        icon: favicon
+        url: https://railway.app/dashboard
+      - title: Resend
+        description: Resend
+        icon: favicon
+        url: https://resend.com/overview
+      - title: Hetzner Cloud
+        description: Hetzner Cloud
+        icon: favicon
+        url: https://console.hetzner.cloud/projects
+  - name: Coding
+    items:
+      - title: Json 2 Types
+        description: Convert JSON to Typescript
+        url: https://json2ts.dev/
+        icon: si-typescript
+      - title: Crontab Guru
+        description: Editor for cron schedule expressions
+        icon: fas fa-pen-square
+        url: https://crontab.guru/
+        id: 0_596_crontabguru
+      - title: GitHub
+        icon: fab fa-github
+        url: https://github.com/
+        id: 1_596_github
+      - title: Grep App
+        icon: fas fa-slash
+        description: >-
+          Allows you to search the contents of files within GitHub repos, with a RegEx option too
+        url: https://grep.app/
+        id: 2_596_grepapp
+      - title: Simple Icons
+        icon: fas fa-icons
+        description: SVG icons for popular brands
+        url: https://simpleicons.org
+      - title: Lucide Icons
+        icon: favicon
+        description: SVG icons for web developers
+        url: https://lucide.dev/
+  - name: Utilities
+    displayData:
+      itemSize: small
+      cols: 2
+      collapsed: true
+    items:
+      - title: Chroniker Timer
+        description: A productivity timer
+        url: https://chroniker.co/
+        id: 0_956_chronikertimer
+      - title: CopyChar
+        description: easily search and copy any symbol
+        url: https://copychar.cc/
+        id: 1_956_copychar
+      - title: DeepL
+        description: Fast, accurate, secure online multi-language translator
+        url: https://www.deepl.com/translator
+        id: 2_956_deepl
+      - title: Font Generator
+        description: Use ASCII characters for different plaintext fonts
+        url: https://www.fontgeneratoronline.com/
+        id: 3_956_fontgenerator
+      - title: JSON Formatter
+        description: CSV, JSON, YAML, XML and more formatting tools
+        url: https://jsonformatter.org/
+        id: 4_956_jsonformatter
+      - title: Time.Is
+        description: Time.Is
+        url: https://time.is/
+        id: 5_956_timeis
+      - title: Torrent Parts
+        description: Inspect and edit what's in your Torrent file or Magnet link
+        url: https://torrent.parts/
+        id: 6_956_torrentparts
+      - title: Photo College
+        url: https://www.befunky.com/create/collage/
+        id: 7_956_photocollege
+      - title: MD5 Hash
+        url: http://www.miraclesalad.com/webtools/md5.php
+        id: 8_956_mdhash
+      - title: GitHub Stars Over Time
+        url: https://seladb.github.io/StarTrack-js/
+        id: 9_956_githubstarsovertime
+      - title: Text & List Tools
+        url: https://pinetools.com/c-text-lists/
+        id: 10_956_textlisttools
+      - title: Online Text Tools
+        description: More text tools, allowing for RegEx actions
+        url: https://onlinetexttools.com/
+        id: 11_956_onlinetexttools
+      - title: Conversao
+        description: Instantly convert a unit to all others
+        url: https://conversao.net/eng/
+        id: 12_956_conversao
+      - title: Omni Calculators
+        description: A collection of thousands of calculators
+        url: https://www.omnicalculator.com/
+        id: 13_956_omnicalculators
+      - title: Dr Meme
+        description: Meme Generator
+        url: https://www.drmemes.com/
+        id: 14_956_drmeme
+      - title: ASCII Tree Generator
+        description: For displaying directory structure
+        url: https://ascii-tree-generator.com/
+        id: 15_956_asciitreegenerator
+      - title: ASCII Diagram Drawer
+        description: For using box characters to draw boxes
+        url: For using box characters to draw boxes
+        id: 16_956_asciidiagramdrawer
+      - title: Bullet Converter
+        description: Small script I use
+        url: https://listed.to/p/LxO8yHsB9E#bc
+        id: 17_956_bulletconverter
+      - title: Lenny Face Maker
+        description: Easily generate ASCII Lenny emojis
+        url: https://www.fontspace.com/lenny-face
+        id: 18_956_lennyfacemaker
+      - title: Public IP
+        description: Check public IP and associated data
+        url: https://www.whatismyip.com/
+        id: 19_956_publicip
+      - title: Who Is Lookup
+        description: Check ICAN info for a given IP address or domain
+        url: https://whois.domaintools.com/
+        id: 20_956_whoislookup
+      - title: Speed Test
+        description: Upload + download speeds and latency
+        url: https://speed.cloudflare.com/
+        id: 21_956_speedtest
+      - title: Mullvad Check
+        description: Confirms a secure connection to Mullvad's WireGuard servers
+        url: https://mullvad.net/check
+        id: 22_956_mullvadcheck
+  - name: Bruteforce
+    displayData:
+      itemSize: small
+      cols: 2
+      collapsed: true
+    icon: far fa-user-visor
+    items:
+      - title: HashCat
+        description: Password cracker
+        icon: favicon
+        url: https://hashcat.net/hashcat/
+        id: 0_1041_hashcat
+      - title: Hydra
+        description: parallelized login cracker which supports numerous protocols to attack
+        icon: favicon
+        url: https://tools.kali.org/password-attacks/hydra
+        id: 1_1041_hydra
+      - title: John The Jumbo
+        description: Community enhanced version of John the Ripper password cracker
+        icon: favicon
+        url: https://github.com/magnumripper/JohnTheRipper
+        id: 2_1041_johnthejumbo
+      - title: Nozzlr
+        description: Script-friendly, modular bruteforce framework
+        icon: favicon
+        url: https://github.com/intrd/nozzlr
+        id: 3_1041_nozzlr
