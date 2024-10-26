@@ -7,3 +7,4 @@ This repository contains a collection of containers for various services I run i
 - SearXNG
 - Pinchflat
 - Dashy
+- Open-Webui
