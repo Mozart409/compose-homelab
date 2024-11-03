@@ -1,61 +1,94 @@
 services:
-    searxng:
-        container_name: searxng
-        ports:
-            - ${SEARXNG_PORT}:8080
-        volumes:
-            - ${PWD}/searxng:/etc/searxng
-        environment:
-            - BASE_URL=http://localhost:$SEARXNG_PORT/
-            - INSTANCE_NAME=SearxNG
-        image: searxng/searxng:2024.10.23-b14d885f2
-        labels:
-            - homepage.group=Search
-            - homepage.name=SearxNG
-            - homepage.icon=emby.png
-            - homepage.href=http://searxng.home/
-            - homepage.description=Meta search engine
-        restart: always
-
-    pinchflat:
-        container_name: pinchflat
-        environment:
-            - TZ=Europe/Berlin
-        ports:
-            - ${PINCHFLAT_PORT}:8945
-        volumes:
-            - ${PWD}/pinchflat/config:/config
-            - ${PWD}/pinchflat/downloads:/downloads
-        image: ghcr.io/kieraneglin/pinchflat:v2024.10.2
-        restart: always
-
-    dashy:
-        container_name: dashy
-        environment:
-          - NODE_ENV=production
-        ports:
-            - ${DASHY_PORT}:8080
-        volumes:
-            - ${PWD}/dashy-conf.yml:/app/user-data/conf.yml
-        restart: always
-        healthcheck:
-          test: ['CMD', 'node', '/app/services/healthcheck']
-          interval: 1m30s
-          timeout: 10s
-          retries: 3
-          start_period: 40s
-        image: lissy93/dashy:latest
-
-    open-webui:
-      image: ghcr.io/open-webui/open-webui:git-d056923
-      container_name: open-webui
-      ports:
-        - ${OPEN_WEBUI_PORT}:8080
-      environment:
-            - OPENAI_API_KEY=${OPENAI_API_KEY}
-      volumes:
-            - open-webui:/app/backend/data
+  searxng:
+    container_name: searxng
+    ports:
+      - ${SEARXNG_PORT}:8080
+    volumes:
+      - ${PWD}/searxng:/etc/searxng
+    environment:
+      - BASE_URL=http://localhost:$SEARXNG_PORT/
+      - INSTANCE_NAME=SearxNG
+    image: searxng/searxng:2024.10.23-b14d885f2
+    labels:
+      - homepage.group=Search
+      - homepage.name=SearxNG
+      - homepage.icon=emby.png
+      - homepage.href=http://searxng.home/
+      - homepage.description=Meta search engine
+    restart: always
+  pinchflat:
+    container_name: pinchflat
+    environment:
+      - TZ=Europe/Berlin
+    ports:
+      - ${PINCHFLAT_PORT}:8945
+    volumes:
+      - ${PWD}/pinchflat/config:/config
+      - ${PWD}/pinchflat/downloads:/downloads
+    image: ghcr.io/kieraneglin/pinchflat:v2024.10.2
+    restart: always
+  dashy:
+    container_name: dashy
+    environment:
+      - NODE_ENV=production
+    ports:
+      - ${DASHY_PORT}:8080
+    volumes:
+      - ${PWD}/dashy-conf.yml:/app/user-data/conf.yml
+    restart: always
+    healthcheck:
+      test: ['CMD', 'node', '/app/services/healthcheck']
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    image: lissy93/dashy:latest
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:git-d056923
+    container_name: open-webui
+    ports:
+      - ${OPEN_WEBUI_PORT}:8080
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - open-webui:/app/backend/data
+  stirlingpdf:
+    image: frooodle/s-pdf:0.30.1
+    container_name: stirlingpdf
+    network_mode: service:stirling-ts
+    depends_on:
+      - stirling-ts
+    volumes:
+      - stirling-config:/configs
+      - stirling-storage:/usr/share/tesseract-ocr/5/tessdata
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+    restart: unless-stopped
+  stirling-ts:
+    image: ghcr.io/tailscale/tailscale:v1.76.1
+    container_name: stirling-ts
+    hostname: pdf
+    environment:
+      - TS_AUTHKEY=${TS_AUTH_KEY}
+      - "TS_EXTRA_ARGS=--advertise-tags=tag:container --reset"
+      #- TS_SERVE_CONFIG=/config/stirling.json
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    volumes:
+      - ${PWD}/config:/config
+      - stirling-ts:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
 volumes:
-    open-webui:
-        external: true
-        name: open-webui
+  open-webui:
+    external: true
+    name: open-webui
+  stirling-ts:
+    driver: local
+  stirling-config:
+    driver: local
+  stirling-storage:
+    driver: local
