@@ -1,4 +1,19 @@
 services:
+  tailscale:
+    env_file: .env
+    container_name: tailscaled
+    image: tailscale/tailscale:v1.76.6
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - /dev/net/tun:/dev/net/tun
+      - ./tailscale/varlib:/var/lib
+      - ./tailscale/tmp:/tmp
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_AUTHKEY=${TS_AUTH_KEY}
   searxng:
     container_name: searxng
     ports:
@@ -9,6 +24,8 @@ services:
       - BASE_URL=http://localhost:$SEARXNG_PORT/
       - INSTANCE_NAME=SearxNG
     image: searxng/searxng:2024.10.23-b14d885f2
+    depends_on:
+      - tailscale
     labels:
       - homepage.group=Search
       - homepage.name=SearxNG
@@ -22,6 +39,8 @@ services:
       - TZ=Europe/Berlin
     ports:
       - ${PINCHFLAT_PORT}:8945
+    depends_on:
+      - tailscale
     volumes:
       - ${PWD}/pinchflat/config:/config
       - ${PWD}/pinchflat/downloads:/downloads
@@ -32,6 +51,7 @@ services:
     container_name: jellyfin
     depends_on:
       - pinchflat
+      - tailscale
     environment:
       - PUID=1000
       - PGID=1000
@@ -49,6 +69,8 @@ services:
 
   dashy:
     container_name: dashy
+    depends_on:
+      - tailscale
     environment:
       - NODE_ENV=production
     ports:
@@ -65,6 +87,8 @@ services:
     image: lissy93/dashy:latest
   open-webui:
     image: ghcr.io/open-webui/open-webui:git-d056923
+    depends_on:
+      - tailscale
     container_name: open-webui
     ports:
       - ${OPEN_WEBUI_PORT}:8080
