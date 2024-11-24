@@ -23,9 +23,7 @@ services:
     environment:
       - BASE_URL=http://localhost:$SEARXNG_PORT/
       - INSTANCE_NAME=SearxNG
-    image: searxng/searxng:2024.10.23-b14d885f2
-    depends_on:
-      - tailscale
+    image: searxng/searxng:latest
     labels:
       - homepage.group=Search
       - homepage.name=SearxNG
@@ -44,10 +42,10 @@ services:
     volumes:
       - ${PWD}/pinchflat/config:/config
       - ${PWD}/pinchflat/downloads:/downloads
-    image: ghcr.io/kieraneglin/pinchflat:v2024.10.30
+    image: ghcr.io/kieraneglin/pinchflat:latest
     restart: unless-stopped
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:10.10.1
+    image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
     depends_on:
       - pinchflat
@@ -86,9 +84,7 @@ services:
       start_period: 40s
     image: lissy93/dashy:latest
   open-webui:
-    image: ghcr.io/open-webui/open-webui:git-d056923
-    depends_on:
-      - tailscale
+    image: ghcr.io/open-webui/open-webui:latest
     container_name: open-webui
     ports:
       - ${OPEN_WEBUI_PORT}:8080
