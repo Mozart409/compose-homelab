@@ -38,8 +38,7 @@ services:
     container_name: pinchflat
     environment:
       - TZ=Europe/Berlin
-    # ports:
-    #   - ${PINCHFLAT_PORT}:8945
+      - LOG_LEVEL=info
     volumes:
       - ${PWD}/pinchflat/config:/config
       - ${PWD}/pinchflat/downloads:/downloads
