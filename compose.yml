@@ -2,7 +2,7 @@ services:
   searxng:
     container_name: searxng
     ports:
-      - ${SEARXNG_PORT}:8080
+      - "${SEARXNG_PORT}:8080"
     volumes:
       - ${PWD}/searxng:/etc/searxng
     environment:
@@ -27,6 +27,45 @@ services:
       - ${PWD}/pinchflat/downloads:/downloads
     image: ghcr.io/kieraneglin/pinchflat:latest
     restart: unless-stopped
+
+  diun:
+    image: crazymax/diun:latest
+    container_name: diun
+    command: serve
+    volumes:
+      - "./diun_data:/data"
+      - "./diun.yml:/diun.yml:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      - "TZ=Europe/Berlin"
+      - "LOG_LEVEL=info"
+      - "LOG_JSON=false"
+    labels:
+      - "diun.enable=true"
+    restart: always
+
+  ntfy:
+    image: binwiederhier/ntfy
+    container_name: ntfy
+    command:
+      - serve
+    environment:
+      - TZ=Europe/Berlin # optional: set desired timezone
+    user: 1000:1000 # optional: replace with your own user/group or uid/gid
+    volumes:
+      - /var/cache/ntfy:/var/cache/ntfy
+      - /etc/ntfy:/etc/ntfy
+    ports:
+      - "${NTFY_PORT}:80"
+    healthcheck:
+      # optional: remember to adapt the host:port to your environment
+      test: [ "CMD-SHELL", "wget -q --tries=1 http://localhost:80/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1" ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
@@ -62,7 +101,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    image: lissy93/dashy:latest
+    image: lissy93/dashy:3.0.1
   open-webui:
     image: ghcr.io/open-webui/open-webui:latest
     container_name: open-webui
