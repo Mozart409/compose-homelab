@@ -16,6 +16,7 @@ services:
       - homepage.href=http://searxng.home/
       - homepage.description=Meta search engine
     restart: unless-stopped
+
   tailscale-pinchflat:
     image: tailscale/tailscale:v1.72.1
     container_name: tailscale-pinchflat
@@ -56,7 +57,7 @@ services:
     command: serve
     volumes:
       - "./diun_data:/data"
-      - "./diun.yml:/diun.yml:ro"
+      - "./config/diun.yml:/diun.yml:ro"
       - "/var/run/docker.sock:/var/run/docker.sock"
     environment:
       - "TZ=Europe/Berlin"
@@ -65,6 +66,26 @@ services:
     labels:
       - "diun.enable=true"
     restart: always
+
+  ts-ntfy:
+    image: tailscale/tailscale:v1.72.1
+    container_name: ts-ntfy
+    hostname: ntfy
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/ntfy.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    volumes:
+      - ${PWD}/tailscale-ntfy/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
 
   ntfy:
     image: binwiederhier/ntfy
@@ -77,8 +98,8 @@ services:
     volumes:
       - /var/cache/ntfy:/var/cache/ntfy
       - /etc/ntfy:/etc/ntfy
-    ports:
-      - "${NTFY_PORT}:80"
+    # ports:
+    #   - "${NTFY_PORT}:80"
     healthcheck:
       # optional: remember to adapt the host:port to your environment
       test: [ "CMD-SHELL", "wget -q --tries=1 http://localhost:80/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1" ]
@@ -86,6 +107,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    depends_on:
+      - ts-ntfy
+    network_mode: service:ts-ntfy
     restart: unless-stopped
 
   jellyfin:
@@ -115,7 +139,7 @@ services:
     ports:
       - ${DASHY_PORT}:8080
     volumes:
-      - ${PWD}/dashy-conf.yml:/app/user-data/conf.yml
+      - ${PWD}/config/dashy-conf.yml:/app/user-data/conf.yml
     restart: unless-stopped
     healthcheck:
       test: [ 'CMD', 'node', '/app/services/healthcheck' ]
