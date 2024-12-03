@@ -35,7 +35,7 @@ services:
       - homepage.description=Meta search engine
     restart: unless-stopped
     depends_on:
-      - tailscale-searxng
+      - ts-searxng
     network_mode: service:tailscale-searxng
 
   tailscale-pinchflat:
