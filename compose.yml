@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
     depends_on:
       - ts-searxng
-    network_mode: service:tailscale-searxng
+    network_mode: service:ts-searxng
 
   tailscale-pinchflat:
     image: tailscale/tailscale:v1.72.1
