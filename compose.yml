@@ -76,7 +76,7 @@ services:
     restart: unless-stopped
     depends_on:
       - ts-pinchflat
-    network_mode: service:tailscale-pinchflat
+    network_mode: service:ts-pinchflat
 
   diun:
     image: crazymax/diun:latest
