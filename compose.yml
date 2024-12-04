@@ -173,7 +173,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
-      - JELLYFIN_PublishedServerUrl=https://jellyfin.dropbear-butterfly.ts.net/
+      - JELLYFIN_PublishedServerUrl=http://100.73.31.13
     volumes:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
