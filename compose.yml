@@ -41,9 +41,9 @@ services:
       - ts-searxng
     network_mode: service:ts-searxng
 
-  tailscale-pinchflat:
+  ts-pinchflat:
     image: tailscale/tailscale:v1.72.1
-    container_name: tailscale-pinchflat
+    container_name: ts-pinchflat
     hostname: pinchflat
     environment:
       - "TS_AUTHKEY=${TS_AUTH_KEY}"
@@ -75,7 +75,7 @@ services:
     image: ghcr.io/kieraneglin/pinchflat:latest
     restart: unless-stopped
     depends_on:
-      - tailscale-pinchflat
+      - ts-pinchflat
     network_mode: service:tailscale-pinchflat
 
   diun:
@@ -142,7 +142,7 @@ services:
   
   ts-jellyfin:
     image: tailscale/tailscale:v1.72.1
-    container_name: tailscale-jellyfin
+    container_name: ts-jellyfin
     hostname: jellyfin
     environment:
       - "TS_AUTHKEY=${TS_AUTH_KEY}"
@@ -174,6 +174,7 @@ services:
       - PGID=1000
       - TZ=Etc/UTC
       - JELLYFIN_PublishedServerUrl=http://100.73.31.13
+    network_mode: service:ts-jellyfin
     volumes:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
@@ -216,7 +217,8 @@ services:
       retries: 3
       start_period: 40s
     image: lissy93/dashy:3.0.1
-  
+    network_mode: service:ts-dashy
+    
   ts-open-webui:
     image: tailscale/tailscale:v1.72.1
     container_name: ts-open-webui
@@ -250,6 +252,7 @@ services:
     volumes:
       - open-webui:/app/backend/data
     restart: unless-stopped
+    network_mode: service:ts-open-webui
 
   ts-isaiah:
     image: tailscale/tailscale:v1.72.1
@@ -285,6 +288,7 @@ services:
     environment:
       SERVER_PORT: "80"
       AUTHENTICATION_SECRET: "password"
+    network_mode: service:ts-isaiah
 
 volumes:
   open-webui:
