@@ -1,6 +1,6 @@
 set dotenv-load
 
-default:
+default: clear
 	docker compose up -d --build --remove-orphans
 
 up: clear
@@ -12,7 +12,7 @@ down: clear
 clear:
 	clear
 
-pull:
+pull: clear
 	docker compose pull
 
 restart: clear
