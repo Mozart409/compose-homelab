@@ -36,8 +36,8 @@ This stack includes the following services:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/homelab-compose-stack.git
-   cd homelab-compose-stack
+   git clone https://github.com/mozart409/compose-homelab.git
+   cd compose-homelab
    ```
 
 2. Copy the example environment file and fill in your credentials:
