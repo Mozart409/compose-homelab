@@ -9,6 +9,9 @@ services:
       - "TS_SERVE_CONFIG=/config/searxng.json"
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
+    dns:
+      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1  # For external lookups.
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
       - ${PWD}/config:/config
@@ -53,6 +56,9 @@ services:
       - ${PWD}/config:/config
     devices:
       - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1  # For external lookups.
     cap_add:
       - net_admin
       - sys_module
@@ -98,6 +104,9 @@ services:
       - "TS_SERVE_CONFIG=/config/ntfy.json"
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
+    dns:
+      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1  # For external lookups.
     volumes:
       - ${PWD}/tailscale-ntfy/state:/var/lib/tailscale
       - ${PWD}/config:/config
