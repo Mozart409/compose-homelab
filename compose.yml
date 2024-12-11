@@ -137,7 +137,6 @@ services:
 
   igotify:
     container_name: igotify
-    hostname: igotify
     image: ghcr.io/androidseb25/igotify-notification-assist:latest
     restart: unless-stopped
     network_mode: service:ts-igotify
