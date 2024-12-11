@@ -97,6 +97,7 @@ services:
 
   gotify:
     image: gotify/server:2.6.1
+    container_name: gotify
     labels:
       - "diun.enable=true"
     restart: always
