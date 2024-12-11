@@ -8,12 +8,9 @@ providers:
     watchByDefault: true
 
 notif:
-  ntfy:
-    endpoint: http://nfty
-    topic: compose-homelab
-    priority: 3
-    tags:
-    - homelab
+  gotify:
+    endpoint: http://gotify
+    priority: 1
     timeout: 10s
     templateTitle: "{{ .Entry.Image }} released"
     templateBody: |
