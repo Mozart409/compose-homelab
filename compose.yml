@@ -15,6 +15,8 @@ services:
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
       - ${PWD}/config:/config
+    labels:
+      - "diun.enable=true"
     devices:
       - /dev/net/tun:/dev/net/tun
     cap_add:
@@ -55,6 +57,8 @@ services:
     volumes:
       - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
       - ${PWD}/config:/config
+    labels:
+      - "diun.enable=true"
     devices:
       - /dev/net/tun:/dev/net/tun
     dns:
@@ -67,6 +71,8 @@ services:
 
   pinchflat:
     container_name: pinchflat
+    labels:
+      - "diun.enable=true"
     environment:
       - TZ=Europe/Berlin
       - LOG_LEVEL=info
@@ -168,6 +174,8 @@ services:
     volumes:
       - ${PWD}/tailscale-igotify/state:/var/lib/tailscale
       - ${PWD}/config:/config
+    labels:
+      - "diun.enable=true"
     devices:
       - /dev/net/tun:/dev/net/tun
     cap_add:
@@ -188,6 +196,8 @@ services:
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
       - ${PWD}/config:/config
+    labels:
+      - "diun.enable=true"
     devices:
       - /dev/net/tun:/dev/net/tun
     dns:
@@ -210,6 +220,8 @@ services:
       - TZ=Etc/UTC
       - JELLYFIN_PublishedServerUrl=http://100.73.31.13
     network_mode: service:ts-jellyfin
+    labels:
+      - "diun.enable=true"
     volumes:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
@@ -228,6 +240,8 @@ services:
     volumes:
       - ${PWD}/tailscale-dashy/state:/var/lib/tailscale
       - ${PWD}/config:/config
+    labels:
+      - "diun.enable=true"
     devices:
       - /dev/net/tun:/dev/net/tun
     dns:
@@ -244,6 +258,8 @@ services:
       - NODE_ENV=production
     volumes:
       - ${PWD}/config/dashy-conf.yml:/app/user-data/conf.yml
+    labels:
+      - "diun.enable=true"
     restart: unless-stopped
     healthcheck:
       test: [ 'CMD', 'node', '/app/services/healthcheck' ]
@@ -258,6 +274,8 @@ services:
     image: tailscale/tailscale:v1.72.1
     container_name: ts-open-webui
     hostname: openwebui
+    labels:
+      - "diun.enable=true"
     environment:
       - "TS_AUTHKEY=${TS_AUTH_KEY}"
       # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
@@ -280,6 +298,8 @@ services:
   open-webui:
     image: ghcr.io/open-webui/open-webui:latest
     container_name: open-webui
+    labels:
+      - "diun.enable=true"
     depends_on:
       - ts-open-webui
     environment:
@@ -292,6 +312,8 @@ services:
   ts-isaiah:
     image: tailscale/tailscale:v1.72.1
     container_name: ts-isaiah
+    labels:
+      - "diun.enable=true"
     hostname: isaiah
     environment:
       - "TS_AUTHKEY=${TS_AUTH_KEY}"
@@ -314,6 +336,8 @@ services:
 
   isaiah:
     image: mosswill/isaiah:latest
+    labels:
+      - "diun.enable=true"
     container_name: isaiah
     restart: unless-stopped
     depends_on:
