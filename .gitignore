@@ -14,3 +14,5 @@ tailscale-open-webui/
 tailscale-dashy/
 tailscale-gotify/
 tailscale-igotify/
+tailscale-grafana/
+tailscale-prometheus/

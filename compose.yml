@@ -31,7 +31,7 @@ services:
     environment:
       - BASE_URL=https://searxng.dropbear-butterfly.ts.net/
       - INSTANCE_NAME=SearxNG
-    image: searxng/searxng:latest
+    image: searxng/searxng:2024.12.13-c60fe999c
     labels:
       - homepage.group=Search
       - homepage.name=SearxNG
@@ -218,7 +218,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
-      - JELLYFIN_PublishedServerUrl=http://100.73.31.13
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.dropbear-butterfly.ts.net
     network_mode: service:ts-jellyfin
     labels:
       - "diun.enable=true"
@@ -226,6 +226,92 @@ services:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
     restart: unless-stopped
+    healthcheck:
+      test: curl -f http://localhost:8096/health
+      interval: 3m
+      timeout: 30s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:v3.0.1
+    container_name: prometheus
+    restart: unless-stopped
+    depends_on:
+      - jellyfin
+      - searxng
+      - ts-prometheus
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-prometheus
+    volumes:
+      - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  ts-prometheus:
+    image: tailscale/tailscale:v1.72.1
+    container_name: ts-prometheus
+    hostname: prometheus
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/prometheus.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    volumes:
+      - ${PWD}/tailscale-prometheus/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+    labels:
+      - "diun.enable=true"
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1  # For external lookups.
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss:11.4.0
+    container_name: grafana
+    restart: unless-stopped
+    network_mode: service:ts-grafana
+    depends_on:
+      - prometheus
+      - ts-grafana
+    environment:
+     - GF_SERVER_ROOT_URL=http://grafana.dropbear-butterfly.ts.net/
+    labels:
+      - "diun.enable=true"
+    volumes:
+     - 'grafana_storage:/var/lib/grafana'
+     - './config/provisioning:/etc/grafana/provisioning'
+
+  ts-grafana:
+    image: tailscale/tailscale:v1.72.1
+    container_name: ts-grafana
+    hostname: grafana
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/grafana.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    volumes:
+      - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+    labels:
+      - "diun.enable=true"
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1  # For external lookups.
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
+
 
   ts-dashy:
     image: tailscale/tailscale:v1.72.1
@@ -234,7 +320,7 @@ services:
     environment:
       - "TS_AUTHKEY=${TS_AUTH_KEY}"
       # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/openwebui.json"
+      - "TS_SERVE_CONFIG=/config/dashy.json"
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     volumes:
@@ -353,3 +439,4 @@ volumes:
   open-webui:
     external: true
     name: open-webui
+  grafana_storage: {}
