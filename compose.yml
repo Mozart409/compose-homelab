@@ -172,7 +172,7 @@ services:
     environment:
       - BASE_URL=https://searxng.dropbear-butterfly.ts.net/
       - INSTANCE_NAME=SearxNG
-    image: searxng/searxng:2024.12.13-c60fe999c
+    image: searxng/searxng:2024.12.14-3742d558a
     labels:
       - homepage.group=Search
       - homepage.name=SearxNG
@@ -202,7 +202,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: dashy
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -227,7 +227,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: gotify
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -252,7 +252,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: grafana
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -277,7 +277,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: igotify
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -302,7 +302,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: isaiah
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -327,7 +327,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -352,7 +352,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: openwebui
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -376,8 +376,9 @@ services:
       - "TS_SERVE_CONFIG=/config/pinchflat.json"
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
+      - "TS_EXTRA_ARGS=--webclient"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -402,7 +403,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: prometheus
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
@@ -426,7 +427,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.72.1
+    image: tailscale/tailscale:v1.78.3
     labels:
       - "diun.enable=true"
     restart: unless-stopped
