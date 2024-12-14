@@ -1,33 +1,174 @@
 services:
-  ts-searxng:
-    image: tailscale/tailscale:v1.72.1
-    container_name: ts-searxng
-    hostname: searxng
+  
+  dashy:
+    container_name: dashy
     environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/searxng.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
-    volumes:
-      - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
-      - ${PWD}/config:/config
+      - NODE_ENV=production
+    healthcheck:
+      interval: 1m30s
+      retries: 3
+      start_period: 40s
+      test: [ 'CMD', 'node', '/app/services/healthcheck' ]
+      timeout: 10s
+    image: lissy93/dashy:3.0.1
     labels:
       - "diun.enable=true"
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - net_admin
-      - sys_module
+    network_mode: service:ts-dashy
     restart: unless-stopped
+    volumes:
+      - ${PWD}/config/dashy-conf.yml:/app/user-data/conf.yml
+
+  diun:
+    command: serve
+    container_name: diun
+    environment:
+      - "TZ=Europe/Berlin"
+      - "LOG_LEVEL=info"
+      - "LOG_JSON=false"
+      - "DIUN_NOTIF_GOTIFY_TOKEN=${GOTIFY_TOKEN}"
+    image: crazymax/diun:latest
+    labels:
+      - "diun.enable=true"
+    restart: always
+    volumes:
+      - "./diun_data:/data"
+      - "./config/diun.yml:/diun.yml:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  gotify:
+    container_name: gotify
+    depends_on:
+      - ts-gotify
+    environment:
+      GOTIFY_DEFAULTUSER_PASS: 'admin'
+    image: gotify/server:2.6.1
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-gotify
+    restart: always
+    volumes:
+      - './gotify_data:/app/data'
+
+  grafana:
+    container_name: grafana
+    depends_on:
+      - prometheus
+      - ts-grafana
+    environment:
+      - GF_SERVER_ROOT_URL=http://grafana.dropbear-butterfly.ts.net/
+    image: grafana/grafana-oss:11.4.0
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-grafana
+    restart: unless-stopped
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
+      - './config/provisioning:/etc/grafana/provisioning'
+
+  igotify:
+    container_name: igotify
+    depends_on:
+      - ts-gotify
+      - gotify
+      - ts-igotify
+    environment:
+      - GOTIFY_DEFAULTUSER_PASS='admin'
+      - GOTIFY_URLS='http://gotify'
+    image: ghcr.io/androidseb25/igotify-notification-assist:latest
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-igotify
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/igotify-data:/app/data
+
+  isaiah:
+    container_name: isaiah
+    depends_on:
+      - ts-isaiah
+    environment:
+      AUTHENTICATION_SECRET: "password"
+      SERVER_PORT: "80"
+    image: mosswill/isaiah:latest
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-isaiah
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  jellyfin:
+    container_name: jellyfin
+    depends_on:
+      - pinchflat
+      - ts-jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.dropbear-butterfly.ts.net
+    healthcheck:
+      interval: 3m
+      retries: 3
+      test: curl -f http://localhost:8096/health
+      timeout: 30s
+    image: lscr.io/linuxserver/jellyfin:latest
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-jellyfin
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/jellyfin/library:/config
+      - ${PWD}/pinchflat/downloads:/data/movies
+
+  open-webui:
+    container_name: open-webui
+    depends_on:
+      - ts-open-webui
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    image: ghcr.io/open-webui/open-webui:latest
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-open-webui
+    restart: unless-stopped
+    volumes:
+      - open-webui:/app/backend/data
+
+  pinchflat:
+    container_name: pinchflat
+    depends_on:
+      - ts-pinchflat
+    environment:
+      - TZ=Europe/Berlin
+      - LOG_LEVEL=info
+    image: ghcr.io/kieraneglin/pinchflat:v2024.12.10
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-pinchflat
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/pinchflat/config:/config
+      - ${PWD}/pinchflat/downloads:/downloads
+
+  prometheus:
+    container_name: prometheus
+    depends_on:
+      - jellyfin
+      - searxng
+      - ts-prometheus
+    image: prom/prometheus:v3.0.1
+    labels:
+      - "diun.enable=true"
+    network_mode: service:ts-prometheus
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
 
   searxng:
     container_name: searxng
-    volumes:
-      - ${PWD}/searxng:/etc/searxng
+    depends_on:
+      - ts-searxng
     environment:
       - BASE_URL=https://searxng.dropbear-butterfly.ts.net/
       - INSTANCE_NAME=SearxNG
@@ -39,404 +180,262 @@ services:
       - homepage.href=http://searxng.home/
       - homepage.description=Meta search engine
       - "diun.enable=true"
-    restart: unless-stopped
-    depends_on:
-      - ts-searxng
     network_mode: service:ts-searxng
-
-  ts-pinchflat:
-    image: tailscale/tailscale:v1.72.1
-    container_name: ts-pinchflat
-    hostname: pinchflat
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/pinchflat.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    volumes:
-      - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - "diun.enable=true"
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
-    cap_add:
-      - net_admin
-      - sys_module
     restart: unless-stopped
-
-  pinchflat:
-    container_name: pinchflat
-    labels:
-      - "diun.enable=true"
-    environment:
-      - TZ=Europe/Berlin
-      - LOG_LEVEL=info
     volumes:
-      - ${PWD}/pinchflat/config:/config
-      - ${PWD}/pinchflat/downloads:/downloads
-    image: ghcr.io/kieraneglin/pinchflat:v2024.12.10
-    restart: unless-stopped
-    depends_on:
-      - ts-pinchflat
-    network_mode: service:ts-pinchflat
-
-  diun:
-    image: crazymax/diun:latest
-    container_name: diun
-    command: serve
-    volumes:
-      - "./diun_data:/data"
-      - "./config/diun.yml:/diun.yml:ro"
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    environment:
-      - "TZ=Europe/Berlin"
-      - "LOG_LEVEL=info"
-      - "LOG_JSON=false"
-      - "DIUN_NOTIF_GOTIFY_TOKEN=${GOTIFY_TOKEN}"
-    labels:
-      - "diun.enable=true"
-    restart: always
-
-  gotify:
-    image: gotify/server:2.6.1
-    container_name: gotify
-    labels:
-      - "diun.enable=true"
-    restart: always
-    depends_on:
-      - ts-gotify
-    network_mode: service:ts-gotify
-    environment:
-      GOTIFY_DEFAULTUSER_PASS: 'admin'
-    volumes:
-      - './gotify_data:/app/data'
-
-  ts-gotify:
-    image: tailscale/tailscale:v1.72.1
-    container_name: ts-gotify
-    hostname: gotify
-    labels:
-      - "diun.enable=true"
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/gotify.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
-    volumes:
-      - ${PWD}/tailscale-gotify/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - net_admin
-      - sys_module
-    restart: unless-stopped
-
-  igotify:
-    container_name: igotify
-    image: ghcr.io/androidseb25/igotify-notification-assist:latest
-    restart: unless-stopped
-    network_mode: service:ts-igotify
-    depends_on:
-      - ts-gotify
-      - gotify
-      - ts-igotify
-    volumes:
-      - ${PWD}/igotify-data:/app/data
-    labels:
-      - "diun.enable=true"
-    environment:
-      - GOTIFY_DEFAULTUSER_PASS='admin'
-      - GOTIFY_URLS='http://gotify'
-
-  ts-igotify:
-    image: tailscale/tailscale:v1.72.1
-    container_name: ts-igotify
-    hostname: igotify
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/igotify.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
-    volumes:
-      - ${PWD}/tailscale-igotify/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - "diun.enable=true"
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - net_admin
-      - sys_module
-    restart: unless-stopped
-
-  ts-jellyfin:
-    image: tailscale/tailscale:v1.72.1
-    container_name: ts-jellyfin
-    hostname: jellyfin
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/jellyfin.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    volumes:
-      - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - "diun.enable=true"
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
-    cap_add:
-      - net_admin
-      - sys_module
-    restart: unless-stopped
-
-  jellyfin:
-    image: lscr.io/linuxserver/jellyfin:latest
-    container_name: jellyfin
-    depends_on:
-      - pinchflat
-      - ts-jellyfin
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-      - JELLYFIN_PublishedServerUrl=https://jellyfin.dropbear-butterfly.ts.net
-    network_mode: service:ts-jellyfin
-    labels:
-      - "diun.enable=true"
-    volumes:
-      - ${PWD}/jellyfin/library:/config
-      - ${PWD}/pinchflat/downloads:/data/movies
-    restart: unless-stopped
-    healthcheck:
-      test: curl -f http://localhost:8096/health
-      interval: 3m
-      timeout: 30s
-      retries: 3
-
-  prometheus:
-    image: prom/prometheus:v3.0.1
-    container_name: prometheus
-    restart: unless-stopped
-    depends_on:
-      - jellyfin
-      - searxng
-      - ts-prometheus
-    labels:
-      - "diun.enable=true"
-    network_mode: service:ts-prometheus
-    volumes:
-      - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
-
-  ts-prometheus:
-    image: tailscale/tailscale:v1.72.1
-    container_name: ts-prometheus
-    hostname: prometheus
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/prometheus.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    volumes:
-      - ${PWD}/tailscale-prometheus/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - "diun.enable=true"
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
-    cap_add:
-      - net_admin
-      - sys_module
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana-oss:11.4.0
-    container_name: grafana
-    restart: unless-stopped
-    network_mode: service:ts-grafana
-    depends_on:
-      - prometheus
-      - ts-grafana
-    environment:
-     - GF_SERVER_ROOT_URL=http://grafana.dropbear-butterfly.ts.net/
-    labels:
-      - "diun.enable=true"
-    volumes:
-     - 'grafana_storage:/var/lib/grafana'
-     - './config/provisioning:/etc/grafana/provisioning'
-
-  ts-grafana:
-    image: tailscale/tailscale:v1.72.1
-    container_name: ts-grafana
-    hostname: grafana
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/grafana.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    volumes:
-      - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - "diun.enable=true"
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
-    cap_add:
-      - net_admin
-      - sys_module
-    restart: unless-stopped
-
+      - ${PWD}/searxng:/etc/searxng
 
   ts-dashy:
-    image: tailscale/tailscale:v1.72.1
+    cap_add:
+      - net_admin
+      - sys_module
     container_name: ts-dashy
-    hostname: dashy
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
     environment:
       - "TS_AUTHKEY=${TS_AUTH_KEY}"
       # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
       - "TS_SERVE_CONFIG=/config/dashy.json"
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
+    hostname: dashy
+    image: tailscale/tailscale:v1.72.1
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-dashy/state:/var/lib/tailscale
       - ${PWD}/config:/config
-    labels:
-      - "diun.enable=true"
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
+
+  ts-gotify:
     cap_add:
       - net_admin
       - sys_module
-    restart: unless-stopped
-
-  dashy:
-    container_name: dashy
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - ${PWD}/config/dashy-conf.yml:/app/user-data/conf.yml
-    labels:
-      - "diun.enable=true"
-    restart: unless-stopped
-    healthcheck:
-      test: [ 'CMD', 'node', '/app/services/healthcheck' ]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    image: lissy93/dashy:3.0.1
-    network_mode: service:ts-dashy
-    
-  ts-open-webui:
-    image: tailscale/tailscale:v1.72.1
-    container_name: ts-open-webui
-    hostname: openwebui
-    labels:
-      - "diun.enable=true"
+    container_name: ts-gotify
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
     environment:
       - "TS_AUTHKEY=${TS_AUTH_KEY}"
       # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/openwebui.json"
+      - "TS_SERVE_CONFIG=/config/gotify.json"
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
+    hostname: gotify
+    image: tailscale/tailscale:v1.72.1
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
     volumes:
-      - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
+      - ${PWD}/tailscale-gotify/state:/var/lib/tailscale
       - ${PWD}/config:/config
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
+
+  ts-grafana:
     cap_add:
       - net_admin
       - sys_module
-    restart: unless-stopped
-
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:latest
-    container_name: open-webui
+    container_name: ts-grafana
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/grafana.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: grafana
+    image: tailscale/tailscale:v1.72.1
     labels:
       - "diun.enable=true"
-    depends_on:
-      - ts-open-webui
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-    volumes:
-      - open-webui:/app/backend/data
     restart: unless-stopped
-    network_mode: service:ts-open-webui
+    volumes:
+      - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+
+  ts-igotify:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-igotify
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/igotify.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: igotify
+    image: tailscale/tailscale:v1.72.1
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-igotify/state:/var/lib/tailscale
+      - ${PWD}/config:/config
 
   ts-isaiah:
-    image: tailscale/tailscale:v1.72.1
+    cap_add:
+      - net_admin
+      - sys_module
     container_name: ts-isaiah
-    labels:
-      - "diun.enable=true"
-    hostname: isaiah
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
     environment:
       - "TS_AUTHKEY=${TS_AUTH_KEY}"
       # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
       - "TS_SERVE_CONFIG=/config/isaiah.json"
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
+    hostname: isaiah
+    image: tailscale/tailscale:v1.72.1
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-isaiah/state:/var/lib/tailscale
       - ${PWD}/config:/config
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100  # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1  # For external lookups.
+
+  ts-jellyfin:
     cap_add:
       - net_admin
       - sys_module
-    restart: unless-stopped
-
-  isaiah:
-    image: mosswill/isaiah:latest
+    container_name: ts-jellyfin
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/jellyfin.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: jellyfin
+    image: tailscale/tailscale:v1.72.1
     labels:
       - "diun.enable=true"
-    container_name: isaiah
     restart: unless-stopped
-    depends_on:
-      - ts-isaiah
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+
+  ts-open-webui:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-open-webui
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
     environment:
-      SERVER_PORT: "80"
-      AUTHENTICATION_SECRET: "password"
-    network_mode: service:ts-isaiah
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/openwebui.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: openwebui
+    image: tailscale/tailscale:v1.72.1
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+
+  ts-pinchflat:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-pinchflat
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/pinchflat.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: pinchflat
+    image: tailscale/tailscale:v1.72.1
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+
+  ts-prometheus:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-prometheus
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/prometheus.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: prometheus
+    image: tailscale/tailscale:v1.72.1
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-prometheus/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+  ts-searxng:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-searxng
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/searxng.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: searxng
+    image: tailscale/tailscale:v1.72.1
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
+      - ${PWD}/config:/config
 
 volumes:
+  grafana_storage: {}
   open-webui:
     external: true
     name: open-webui
-  grafana_storage: {}
