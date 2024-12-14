@@ -9,7 +9,6 @@ scrape_configs:
   - targets: [ 'jellyfin:8096' ] # Metrics endpoint of the frontend application
     labels:
       group: 'jellyfin'
-
 - job_name: 'searxng'
   static_configs:
   - targets: [ 'searxng:8080' ] # Metrics endpoint of the frontend application
@@ -18,3 +17,8 @@ scrape_configs:
   basic_auth:
     username: 'doesnotmatter'
     password: 'password'
+- job_name: 'ts-pinchflat'
+  static_configs:
+  - targets: [ 'ts-pinchflat:5252' ] # Metrics endpoint of the frontend application
+    labels:
+      group: 'ts-pinchflat'
