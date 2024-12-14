@@ -1,5 +1,5 @@
 services:
-  
+
   dashy:
     container_name: dashy
     environment:
@@ -127,6 +127,11 @@ services:
       - ts-open-webui
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 40s
+      test: [ 'CMD', 'curl', '-f', 'http://localhost:8080/health' ]
     image: ghcr.io/open-webui/open-webui:latest
     labels:
       - "diun.enable=true"
@@ -142,6 +147,18 @@ services:
     environment:
       - TZ=Europe/Berlin
       - LOG_LEVEL=info
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 40s
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://localhost:8945/healthcheck'
+        ]
+      timeout: 10s
     image: ghcr.io/kieraneglin/pinchflat:v2024.12.10
     labels:
       - "diun.enable=true"
@@ -157,6 +174,18 @@ services:
       - jellyfin
       - searxng
       - ts-prometheus
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 40s
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://localhost:9090/-/healthy'
+        ]
+      timeout: 10s
     image: prom/prometheus:v3.0.1
     labels:
       - "diun.enable=true"
@@ -172,6 +201,12 @@ services:
     environment:
       - BASE_URL=https://searxng.dropbear-butterfly.ts.net/
       - INSTANCE_NAME=SearxNG
+    healthcheck:
+      interval: 1m30s
+      retries: 3
+      start_period: 40s
+      test: [ 'CMD', 'curl', '-f', 'http://localhost:8080/healthz' ]
+      timeout: 10s
     image: searxng/searxng:2024.12.14-3742d558a
     labels:
       - homepage.group=Search
@@ -376,7 +411,6 @@ services:
       - "TS_SERVE_CONFIG=/config/pinchflat.json"
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
-      - "TS_EXTRA_ARGS=--webclient"
     hostname: pinchflat
     image: tailscale/tailscale:v1.78.3
     labels:
