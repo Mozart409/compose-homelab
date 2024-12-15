@@ -181,8 +181,7 @@ services:
       test:
         [
           'CMD',
-          'curl',
-          '-f',
+          'wget',
           'http://localhost:9090/-/healthy'
         ]
       timeout: 10s
@@ -205,7 +204,7 @@ services:
       interval: 1m30s
       retries: 3
       start_period: 40s
-      test: [ 'CMD', 'curl', '-f', 'http://localhost:8080/healthz' ]
+      test: [ 'CMD', 'wget','-nv', '-t1', '--spider', '0.0.0.0:8080/healthz/' ]
       timeout: 10s
     image: searxng/searxng:2024.12.14-3742d558a
     labels:
