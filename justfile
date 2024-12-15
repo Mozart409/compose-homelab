@@ -1,9 +1,9 @@
 set dotenv-load
 
-default: clear fmt
+default: clear
 	docker compose up -d --build --remove-orphans
 
-up: clear fmt
+up: clear
 	docker compose up -d --build --remove-orphans
 
 down: clear
@@ -12,10 +12,10 @@ down: clear
 clear:
 	clear
 
-pull: clear fmt
+pull: clear 
 	docker compose pull
 
-restart: clear fmt
+restart: clear 
 	docker compose restart
 
 fmt: 
