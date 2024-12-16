@@ -574,10 +574,6 @@ services:
 volumes:
   grafana_storage: {}
 
-
   open-webui:
     external: true
     name: open-webui
-
-
-    
