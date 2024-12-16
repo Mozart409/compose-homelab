@@ -221,7 +221,7 @@ services:
       retries: 3
       start_period: 40s
       test:
-        ["CMD", "wget", "-nv", "-t1", "--spider", "0.0.0.0:8080/healthz/"]
+        ["CMD", "wget", "-nv", "-t1", "--spider", "0.0.0.0:8080/"]
       timeout: 10s
     image: searxng/searxng:2024.12.14-3742d558a
     labels:
