@@ -5,6 +5,7 @@ tailscale/
 diun_data/
 gotify_data/
 igotify-data/
+immich-library/
 tailscale-pinchflat/
 tailscale-ntfy/
 tailscale-searxng/
@@ -16,3 +17,4 @@ tailscale-gotify/
 tailscale-igotify/
 tailscale-grafana/
 tailscale-prometheus/
+tailscale-immich/

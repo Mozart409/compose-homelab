@@ -130,8 +130,6 @@ services:
     depends_on:
       - valkey
       - database
-    environment:
-      - IMMICH_TELEMETRY_INCLUDE=all
     env_file:
       - .env
     healthcheck:
