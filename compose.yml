@@ -21,7 +21,7 @@ services:
       postgres -c shared_preload_libraries=vectors.so -c
       'search_path="$$user", public, vectors' -c logging_collector=on -c
       max_wal_size=2GB -c shared_buffers=512MB -c wal_compression=on
-    container_name: immich_postgres
+    container_name: immich-postgres
     env_file:
       - .env
     environment:
@@ -126,7 +126,7 @@ services:
       - ${PWD}/igotify-data:/app/data
 
   immich-server:
-    container_name: immich_server
+    container_name: immich-server
     depends_on:
       - valkey
       - database
@@ -563,7 +563,7 @@ services:
       - ${PWD}/config:/config
 
   valkey:
-    container_name: immich_valkey
+    container_name: immich-valkey
     healthcheck:
       test: redis-cli ping || exit 1
     image: valkey/valkey:8.0.1-alpine
