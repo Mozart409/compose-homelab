@@ -3,7 +3,7 @@ set dotenv-load
 default: clear
 	docker compose up -d --build --remove-orphans
 
-up: clear
+up: clear git-pull
 	docker compose up -d --build --remove-orphans
 
 down: clear
@@ -20,3 +20,6 @@ restart: clear
 
 fmt: 
 	dprint fmt
+
+git-pull:
+	git pull
