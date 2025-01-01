@@ -173,7 +173,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ=Etc/CET
       - JELLYFIN_PublishedServerUrl=https://jellyfin.dropbear-butterfly.ts.net
     healthcheck:
       interval: 3m
@@ -285,6 +285,81 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/searxng:/etc/searxng
+
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:v2.4.1 
+    container_name: mealie
+    restart: unless-stopped
+    network_mode: service:ts-mealie
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+    volumes:
+      - mealie_data:/app/data/
+    environment:
+      # Set Backend ENV Variables Here
+      ALLOW_SIGNUP: "false"
+      PUID: 1000
+      PGID: 1000
+      TZ: Europe/Berlin
+      BASE_URL: https://mealie.dropbear-butterfly.ts.net
+      # Database Settings
+      DB_ENGINE: postgres
+      POSTGRES_USER: mealie
+      POSTGRES_PASSWORD: mealie
+      POSTGRES_SERVER: postgres
+      POSTGRES_PORT: 15432
+      POSTGRES_DB: mealie
+    labels:
+      - "diun.enable=true"
+    depends_on:
+      mealie_postgres:
+        condition: service_healthy
+
+  mealie_postgres:
+    container_name: mealie_postgres
+    image: bitnami/postgresql:16.6.0
+    restart: unless-stopped
+    labels:
+      - "diun.enable=true"
+    volumes:
+      - mealie_pgdata:/bitnami/postgresql
+    environment:
+      POSTGRESQL_PASSWORD: mealie
+      POSTGRESQL_USERNAME: mealie
+      POSTGRESQL_DATABASE: mealie
+      POSTGRESQL_PORT_NUMBER: 15432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  ts-mealie:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-mealie
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/mealie.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: mealie
+    image: tailscale/tailscale:v1.78.3
+    labels:
+      - "diun.enable=true"
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-mealie/state:/var/lib/tailscale
+      - ${PWD}/config:/config
 
   ts-dashy:
     cap_add:
@@ -573,7 +648,8 @@ services:
 
 volumes:
   grafana_storage: {}
-
+  mealie_data: {}
+  mealie_pgdata: {}
   open-webui:
     external: true
     name: open-webui

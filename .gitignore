@@ -18,3 +18,5 @@ tailscale-igotify/
 tailscale-grafana/
 tailscale-prometheus/
 tailscale-immich/
+*_data/
+tailscale-*/
