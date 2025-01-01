@@ -287,7 +287,7 @@ services:
       - ${PWD}/searxng:/etc/searxng
 
   mealie:
-    image: ghcr.io/mealie-recipes/mealie:v2.4.1 
+    image: ghcr.io/mealie-recipes/mealie:v2.4.1
     container_name: mealie
     restart: unless-stopped
     network_mode: service:ts-mealie
@@ -331,7 +331,7 @@ services:
       POSTGRESQL_DATABASE: mealie
       POSTGRESQL_PORT_NUMBER: 15432
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: pg_isready -U mealie -d mealie -h
       interval: 30s
       timeout: 20s
       retries: 3
