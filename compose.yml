@@ -331,7 +331,7 @@ services:
       POSTGRESQL_DATABASE: mealie
       POSTGRESQL_PORT_NUMBER: 15432
     healthcheck:
-      test: pg_isready -U mealie -d mealie -h
+      test: [ "CMD-SHELL", "pg_isready -U mealie -p 15432 -d mealie" ]
       interval: 30s
       timeout: 20s
       retries: 3
