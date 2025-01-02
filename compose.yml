@@ -167,6 +167,10 @@ services:
 
   jellyfin:
     container_name: jellyfin
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
     depends_on:
       - pinchflat
       - ts-jellyfin
@@ -316,6 +320,7 @@ services:
     depends_on:
       mealie_postgres:
         condition: service_healthy
+      ts-mealie:
 
   mealie_postgres:
     container_name: mealie_postgres
