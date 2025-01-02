@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/config/dashy-conf.yml:/app/user-data/conf.yml
-  
+
   diun:
     command: serve
     container_name: diun
