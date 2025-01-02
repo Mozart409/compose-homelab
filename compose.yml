@@ -9,7 +9,7 @@ services:
       start_period: 40s
       test: ["CMD", "node", "/app/services/healthcheck"]
       timeout: 10s
-    image: lissy93/dashy:3.0.1
+    image: lissy93/dashy:3.1.0
     labels:
       - "diun.enable=true"
     network_mode: service:ts-dashy
@@ -176,7 +176,7 @@ services:
       test:
         ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
       timeout: 10s
-    image: ghcr.io/kieraneglin/pinchflat:v2024.12.10
+    image: ghcr.io/kieraneglin/pinchflat:v2024.12.31
     labels:
       - "diun.enable=true"
     network_mode: service:ts-pinchflat
@@ -227,7 +227,7 @@ services:
       test:
         ["CMD", "wget", "-nv", "-t1", "--spider", "0.0.0.0:8080/"]
       timeout: 10s
-    image: searxng/searxng:2024.12.14-3742d558a
+    image: searxng/searxng:2024.12.29-c1bb0bebd
     labels:
       - homepage.group=Search
       - homepage.name=SearxNG
