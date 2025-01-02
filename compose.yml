@@ -200,7 +200,7 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:latest
+    image: ghcr.io/open-webui/open-webui:v0.5.3
     labels:
       - "diun.enable=true"
     network_mode: service:ts-open-webui
