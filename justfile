@@ -1,7 +1,6 @@
 set dotenv-load
 
-default: clear
-	docker compose up -d --build --remove-orphans
+default: up
 
 up: clear git-pull
 	docker compose up -d --build --remove-orphans
