@@ -19,10 +19,10 @@ This stack includes the following services:
 - **Pinchflat**: A service for managing and downloading media.
 - **Dashy**: A customizable dashboard for organizing web apps.
 - **Open-WebUI**: A web interface for managing various services.
-- **Diun**: Docker image update notifier.
-- **Ntfy**: A notification service.
 - **Isaiah**: A service for managing Docker containers.
 - **Jellyfin**: A media server for streaming your media.
+- **Prometheus**: An open-source systems monitoring and alerting toolkit.
+- **Grafana**: A multi-platform open source analytics and interactive visualization web application.
 
 ## Getting Started
 
