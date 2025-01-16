@@ -23,3 +23,9 @@ scrape_configs:
       - targets: ["dashy:8080"]
         labels:
           group: "dashy"
+
+  - job_name: "pinchflat"
+    static_configs:
+      - targets: ["pinchflat:8945"]
+        labels:
+          group: "pinchflat"
