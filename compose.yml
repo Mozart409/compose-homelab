@@ -192,29 +192,6 @@ services:
       - ${PWD}/tailscale-dashy/state:/var/lib/tailscale
       - ${PWD}/config:/config
 
-  ts-gotify:
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-gotify
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/gotify.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: gotify
-    image: tailscale/tailscale:v1.78.3
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-gotify/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-
   ts-grafana:
     cap_add:
       - net_admin
@@ -236,29 +213,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-
-  ts-igotify:
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-igotify
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/igotify.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: igotify
-    image: tailscale/tailscale:v1.78.3
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-igotify/state:/var/lib/tailscale
       - ${PWD}/config:/config
 
   ts-isaiah:
@@ -400,8 +354,6 @@ services:
 
 volumes:
   grafana_storage: {}
-  mealie_data: {}
-  mealie_pgdata: {}
   open-webui:
     external: true
     name: open-webui
