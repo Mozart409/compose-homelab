@@ -61,10 +61,13 @@ services:
       resources:
         limits:
           memory: 1000M
+
     depends_on:
       - pinchflat
       - ts-jellyfin
     environment:
+      - PUID=1000
+      - PGID=1000
       - TZ=Etc/CET
       - JELLYFIN_PublishedServerUrl=https://jellyfin.dropbear-butterfly.ts.net
     healthcheck:
