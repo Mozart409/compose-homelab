@@ -18,12 +18,6 @@ scrape_configs:
       username: "doesnotmatter"
       password: "password"
 
-  - job_name: "dashy"
-    static_configs:
-      - targets: ["dashy:8080"]
-        labels:
-          group: "dashy"
-
   - job_name: "pinchflat"
     static_configs:
       - targets: ["pinchflat:8945"]
