@@ -106,6 +106,7 @@ services:
     environment:
       - TZ=Europe/Berlin
       - LOG_LEVEL=info
+      - ENABLE_PROMETHEUS=1
     healthcheck:
       interval: 30s
       retries: 3
