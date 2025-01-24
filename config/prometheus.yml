@@ -17,9 +17,13 @@ scrape_configs:
     basic_auth:
       username: "doesnotmatter"
       password: "password"
-
   - job_name: "pinchflat"
     static_configs:
       - targets: ["pinchflat:8945"]
         labels:
           group: "pinchflat"
+  - job_name: "wud"
+    static_configs:
+      - targets: ["wud:3000"]
+        labels:
+          group: "wud"
