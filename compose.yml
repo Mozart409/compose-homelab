@@ -6,6 +6,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     network_mode: service:ts-wud
     restart: unless-stopped
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     healthcheck:
       test: curl --fail http://localhost:${WUD_SERVER_PORT:-3000}/health || exit 1
       interval: 10s
@@ -23,6 +25,8 @@ services:
       test: ["CMD", "node", "/app/services/healthcheck"]
       timeout: 10s
     image: lissy93/dashy:3.1.0
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     network_mode: service:ts-dashy
     restart: unless-stopped
     volumes:
@@ -32,6 +36,8 @@ services:
     depends_on:
       - prometheus
       - ts-grafana
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     environment:
       - GF_SERVER_ROOT_URL=http://grafana.dropbear-butterfly.ts.net/
     healthcheck:
@@ -47,6 +53,8 @@ services:
       - "grafana_storage:/var/lib/grafana"
       - "./config/provisioning:/etc/grafana/provisioning"
   isaiah:
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     container_name: isaiah
     depends_on:
       - ts-isaiah
@@ -66,6 +74,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
   jellyfin:
     container_name: jellyfin
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     deploy:
       resources:
         limits:
@@ -91,6 +101,8 @@ services:
       - ${PWD}/pinchflat/downloads:/data/movies
   open-webui:
     container_name: open-webui
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     depends_on:
       - ts-open-webui
     environment:
@@ -107,6 +119,8 @@ services:
       - open-webui:/app/backend/data
   pinchflat:
     container_name: pinchflat
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     depends_on:
       - ts-pinchflat
     environment:
@@ -127,6 +141,8 @@ services:
       - ${PWD}/pinchflat/downloads:/downloads
   prometheus:
     container_name: prometheus
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     depends_on:
       - jellyfin
       - searxng
@@ -144,6 +160,8 @@ services:
       - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
   searxng:
     container_name: searxng
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     depends_on:
       - ts-searxng
     environment:
@@ -170,6 +188,8 @@ services:
     cap_add:
       - net_admin
       - sys_module
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     container_name: ts-dashy
     devices:
       - /dev/net/tun:/dev/net/tun
@@ -361,6 +381,8 @@ services:
     hostname: wud
     image: tailscale/tailscale:v1.78.3
     restart: unless-stopped
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     volumes:
       - ${PWD}/tailscale-wud/state:/var/lib/tailscale
       - ${PWD}/config:/config
