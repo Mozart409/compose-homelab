@@ -14,7 +14,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/config/dashy-conf.yml:/app/user-data/conf.yml
-
   grafana:
     container_name: grafana
     depends_on:
@@ -34,7 +33,6 @@ services:
     volumes:
       - "grafana_storage:/var/lib/grafana"
       - "./config/provisioning:/etc/grafana/provisioning"
-
   isaiah:
     container_name: isaiah
     depends_on:
@@ -46,22 +44,19 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test:
-        ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:80/"]
+      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:80/"]
       timeout: 10s
     image: mosswill/isaiah:1.33.0
     network_mode: service:ts-isaiah
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-
   jellyfin:
     container_name: jellyfin
     deploy:
       resources:
         limits:
           memory: 1000M
-
     depends_on:
       - pinchflat
       - ts-jellyfin
@@ -81,7 +76,6 @@ services:
     volumes:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
-
   open-webui:
     container_name: open-webui
     depends_on:
@@ -93,12 +87,11 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.5.4
+    image: ghcr.io/open-webui/open-webui:v0.5.7
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
       - open-webui:/app/backend/data
-
   pinchflat:
     container_name: pinchflat
     depends_on:
@@ -111,8 +104,7 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test:
-        ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
+      test: ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
       timeout: 10s
     image: ghcr.io/kieraneglin/pinchflat:v2025.1.14
     network_mode: service:ts-pinchflat
@@ -120,7 +112,6 @@ services:
     volumes:
       - ${PWD}/pinchflat/config:/config
       - ${PWD}/pinchflat/downloads:/downloads
-
   prometheus:
     container_name: prometheus
     depends_on:
@@ -131,22 +122,13 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test:
-        [
-          "CMD",
-          "wget",
-          "-nv",
-          "-t1",
-          "--spider",
-          "http://localhost:9090/-/healthy",
-        ]
+      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
       timeout: 10s
     image: prom/prometheus:v3.0.1
     network_mode: service:ts-prometheus
     restart: unless-stopped
     volumes:
       - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
-
   searxng:
     container_name: searxng
     depends_on:
@@ -158,8 +140,7 @@ services:
       interval: 1m30s
       retries: 3
       start_period: 40s
-      test:
-        ["CMD", "wget", "-nv", "-t1", "--spider", "0.0.0.0:8080/"]
+      test: ["CMD", "wget", "-nv", "-t1", "--spider", "0.0.0.0:8080/"]
       timeout: 10s
     image: searxng/searxng:2024.12.29-c1bb0bebd
     labels:
@@ -172,7 +153,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/searxng:/etc/searxng
-
   ts-dashy:
     cap_add:
       - net_admin
@@ -195,7 +175,6 @@ services:
     volumes:
       - ${PWD}/tailscale-dashy/state:/var/lib/tailscale
       - ${PWD}/config:/config
-
   ts-grafana:
     cap_add:
       - net_admin
@@ -218,7 +197,6 @@ services:
     volumes:
       - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
       - ${PWD}/config:/config
-
   ts-isaiah:
     cap_add:
       - net_admin
@@ -241,7 +219,6 @@ services:
     volumes:
       - ${PWD}/tailscale-isaiah/state:/var/lib/tailscale
       - ${PWD}/config:/config
-
   ts-jellyfin:
     cap_add:
       - net_admin
@@ -264,7 +241,6 @@ services:
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
       - ${PWD}/config:/config
-
   ts-open-webui:
     cap_add:
       - net_admin
@@ -287,7 +263,6 @@ services:
     volumes:
       - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
       - ${PWD}/config:/config
-
   ts-pinchflat:
     cap_add:
       - net_admin
@@ -310,7 +285,6 @@ services:
     volumes:
       - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
       - ${PWD}/config:/config
-
   ts-prometheus:
     cap_add:
       - net_admin
@@ -355,7 +329,6 @@ services:
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
       - ${PWD}/config:/config
-
 volumes:
   grafana_storage: {}
   open-webui:
