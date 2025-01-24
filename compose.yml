@@ -160,8 +160,6 @@ services:
       - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
   searxng:
     container_name: searxng
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     depends_on:
       - ts-searxng
     environment:
@@ -180,6 +178,7 @@ services:
       - homepage.icon=emby.png
       - homepage.href=http://searxng.home/
       - homepage.description=Meta search engine
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     network_mode: service:ts-searxng
     restart: unless-stopped
     volumes:
