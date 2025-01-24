@@ -133,7 +133,7 @@ services:
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
       timeout: 10s
-    image: ghcr.io/kieraneglin/pinchflat:v2025.1.14
+    image: ghcr.io/kieraneglin/pinchflat:v2025.1.17
     network_mode: service:ts-pinchflat
     restart: unless-stopped
     volumes:
@@ -153,7 +153,7 @@ services:
       start_period: 40s
       test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
       timeout: 10s
-    image: prom/prometheus:v3.0.1
+    image: prom/prometheus:v3.1.0
     network_mode: service:ts-prometheus
     restart: unless-stopped
     volumes:
