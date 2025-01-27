@@ -397,7 +397,7 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     volumes:
-      - ${PWD}/tailscale-wud/state:/var/lib/tailscale
+      - ${PWD}/tailscale-authelia/state:/var/lib/tailscale
       - ${PWD}/config:/config
   ts-wud:
     cap_add:
