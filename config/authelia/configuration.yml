@@ -1,0 +1,44 @@
+###############################################################
+#                   Authelia configuration                    #
+###############################################################
+server:
+  address: 'tcp://:9091'
+log:
+  level: 'debug'
+totp:
+  issuer: 'authelia.com'
+identity_validation:
+  reset_password:
+    jwt_secret: 'eipu0aaweixeodoh2Wu5Caaco3Moog6S'
+authentication_backend:
+  file:
+    path: '/config/users_database.yml'
+access_control:
+  default_policy: 'deny'
+  rules:
+    - domain: 'public.example.com'
+      policy: 'bypass'
+    - domain: 'traefik.example.com'
+      policy: 'one_factor'
+    - domain: 'secure.example.com'
+      policy: 'two_factor'
+session:
+  secret: 'su7AhX4vauHai8zep2waighohTheiwie'
+  cookies:
+    - name: 'authelia_session'
+      domain: 'dropbear-butterfly.ts.net' # Should match whatever your root protected domain is
+      authelia_url: 'https://authelia.dropbear-butterfly.ts.net'
+      expiration: '1 hour' # 1 hour
+      inactivity: '5 minutes' # 5 minutes
+      default_redirection_url: 'https://public.dropbear-butterfly.ts.net'
+regulation:
+  max_retries: 3
+  find_time: '2 minutes'
+  ban_time: '5 minutes'
+storage:
+  encryption_key: 'Zah9goruneeZu2choecieth1Vash2moo'
+  local:
+    path: '/config/db.sqlite3'
+notifier:
+  filesystem:
+    filename: '/config/notification.txt'

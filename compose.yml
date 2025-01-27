@@ -1,4 +1,19 @@
 services:
+  authelia:
+    image: ghcr.io/authelia/authelia:4.38
+    container_name: authelia
+    restart: unless-stopped
+    volumes:
+      - './config/authelia:/config'
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+    ports:
+      - 9091:9091
+    healthcheck:
+      ## In production the healthcheck section should be commented.
+      disable: false
+    environment:
+      TZ: 'Europe/Berlin'
   whatsupdocker:
     image: ghcr.io/getwud/wud:8.0.1
     container_name: wud
