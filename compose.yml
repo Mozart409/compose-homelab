@@ -47,8 +47,8 @@ services:
       - pinchflat
       - ts-jellyfin
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=0
+      - PGID=0
       - TZ=Etc/CET
       - JELLYFIN_PublishedServerUrl=https://jellyfin.dropbear-butterfly.ts.net
     healthcheck:
@@ -96,7 +96,7 @@ services:
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
       timeout: 10s
-    image: ghcr.io/kieraneglin/pinchflat:v2025.1.17
+    image: ghcr.io/kieraneglin/pinchflat:v2025.1.27
     network_mode: service:ts-pinchflat
     restart: unless-stopped
     volumes:
