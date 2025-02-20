@@ -306,6 +306,7 @@ services:
     restart: unless-stopped
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - "wud.tag.exclude=unstable"
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
       - ${PWD}/config:/config
