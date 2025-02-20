@@ -75,7 +75,7 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.5.11
+    image: ghcr.io/open-webui/open-webui:v0.5.15
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
@@ -123,7 +123,7 @@ services:
         "http://localhost:9090/-/healthy",
       ]
       timeout: 10s
-    image: prom/prometheus:v3.1.0
+    image: prom/prometheus:v3.2.0
     network_mode: service:ts-prometheus
     restart: unless-stopped
     volumes:
