@@ -30,7 +30,7 @@ services:
       timeout: 3s
     volumes:
       - authentik-redis:/data
-  server:
+  authentik-server:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.12.3}
     restart: unless-stopped
     container_name: authentik-server
@@ -46,15 +46,13 @@ services:
       - ./config/authentik/custom-templates:/templates
     env_file:
       - .env
-    ports:
-      - "${COMPOSE_PORT_HTTP:-9000}:9000"
-      - "${COMPOSE_PORT_HTTPS:-9443}:9443"
+    network_mode: service:ts-authentik
     depends_on:
       authentik-postgresql:
         condition: service_healthy
       authentik-redis:
         condition: service_healthy
-  worker:
+  authentik-worker:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.12.3}
     restart: unless-stopped
     container_name: authentik-worker
@@ -259,6 +257,29 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+
+  ts-authentik:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-authentik
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/authentik.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: authentik
+    image: tailscale/tailscale:v1.80.0
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-authentik/state:/var/lib/tailscale
       - ${PWD}/config:/config
   ts-jellyfin:
     cap_add:
