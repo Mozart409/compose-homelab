@@ -1,87 +1,4 @@
 services:
-  authentik-postgresql:
-    image: docker.io/library/postgres:16-alpine
-    restart: unless-stopped
-    container_name: authentik-postgresql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 5s
-    volumes:
-      - authentik-database:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: ${AUTHENTIK_PG_PASS:?database password required}
-      POSTGRES_USER: ${PG_USER:-authentik}
-      POSTGRES_DB: ${PG_DB:-authentik}
-    env_file:
-      - .env
-  authentik-redis:
-    image: docker.io/library/redis:alpine
-    command: --save 60 1 --loglevel warning
-    restart: unless-stopped
-    container_name: authentik-redis
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 3s
-    volumes:
-      - authentik-redis:/data
-  authentik-server:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.12.3}
-    restart: unless-stopped
-    container_name: authentik-server
-    command: server
-    environment:
-      AUTHENTIK_REDIS__HOST: authentik-redis
-      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
-      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_PG_PASS}
-    volumes:
-      - ./config/authentik/media:/media
-      - ./config/authentik/custom-templates:/templates
-    env_file:
-      - .env
-    network_mode: service:ts-authentik
-    depends_on:
-      authentik-postgresql:
-        condition: service_healthy
-      authentik-redis:
-        condition: service_healthy
-  authentik-worker:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2024.12.3}
-    restart: unless-stopped
-    container_name: authentik-worker
-    command: worker
-    environment:
-      AUTHENTIK_REDIS__HOST: authentik-redis
-      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
-      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_PG_PASS}
-    # `user: root` and the docker socket volume are optional.
-    # See more for the docker socket integration here:
-    # https://goauthentik.io/docs/outposts/integrations/docker
-    # Removing `user: root` also prevents the worker from fixing the permissions
-    # on the mounted folders, so when removing this make sure the folders have the correct UID/GID
-    # (1000:1000 by default)
-    user: root
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./config/authentik/media:/media
-      - ./config/authentik/certs:/certs
-      - ./config/authentik/custom-templates:/templates
-    env_file:
-      - .env
-    depends_on:
-      authentik-postgresql:
-        condition: service_healthy
-      authentik-redis:
-        condition: service_healthy
   whatsupdocker:
     image: ghcr.io/getwud/wud:8.0.1
     container_name: wud
@@ -197,14 +114,7 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: [
-        "CMD",
-        "wget",
-        "-nv",
-        "-t1",
-        "--spider",
-        "http://localhost:9090/-/healthy",
-      ]
+      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
       timeout: 10s
     image: prom/prometheus:v3.2.0
     network_mode: service:ts-prometheus
@@ -257,29 +167,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-
-  ts-authentik:
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-authentik
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/authentik.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: authentik
-    image: tailscale/tailscale:v1.80.0
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-authentik/state:/var/lib/tailscale
       - ${PWD}/config:/config
   ts-jellyfin:
     cap_add:
@@ -421,7 +308,3 @@ volumes:
   open-webui:
     external: true
     name: open-webui
-  authentik-database:
-    driver: local
-  authentik-redis:
-    driver: local
