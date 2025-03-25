@@ -33,6 +33,16 @@ services:
     volumes:
       - "grafana_storage:/var/lib/grafana"
       - "./config/provisioning:/etc/grafana/provisioning"
+  tclip:
+    volumes:
+      - ./tclip_storage:/data
+    environment:
+      - DATA_DIR=/data
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      - ENABLE_LINE_NUMBERS=true
+      - ENABLE_WORD_WRAP=true
+    restart: unless-stopped
+    image: ghcr.io/tailscale-dev/tclip:latest
   jellyfin:
     container_name: jellyfin
     tty: true
@@ -110,14 +120,7 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: [
-        "CMD",
-        "wget",
-        "-nv",
-        "-t1",
-        "--spider",
-        "http://localhost:9090/-/healthy",
-      ]
+      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
       timeout: 10s
     image: prom/prometheus:v3.2.1
     network_mode: service:ts-prometheus
