@@ -1,6 +1,8 @@
 services:
   whatsupdocker:
     image: ghcr.io/getwud/wud:8.0.1
+    tty: true
+    stdin_open: true
     container_name: wud
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -33,6 +35,8 @@ services:
       - "./config/provisioning:/etc/grafana/provisioning"
   jellyfin:
     container_name: jellyfin
+    tty: true
+    stdin_open: true
     deploy:
       resources:
         limits:
@@ -58,6 +62,8 @@ services:
       - ${PWD}/pinchflat/downloads:/data/movies
   open-webui:
     container_name: open-webui
+    tty: true
+    stdin_open: true
     depends_on:
       - ts-open-webui
     environment:
@@ -74,6 +80,8 @@ services:
       - open-webui:/app/backend/data
   pinchflat:
     container_name: pinchflat
+    tty: true
+    stdin_open: true
     depends_on:
       - ts-pinchflat
     environment:
@@ -102,7 +110,14 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
+      test: [
+        "CMD",
+        "wget",
+        "-nv",
+        "-t1",
+        "--spider",
+        "http://localhost:9090/-/healthy",
+      ]
       timeout: 10s
     image: prom/prometheus:v3.2.1
     network_mode: service:ts-prometheus
