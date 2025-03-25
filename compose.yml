@@ -1,14 +1,4 @@
 services:
-  rustypaste:
-    image: ghcr.io/orhun/rustypaste/rustypaste:sha-dada3b9
-    container_name: rustypaste
-    network_mode: service:ts-rustypaste
-    restart: unless-stopped
-    volumes:
-      - rusty_upload:/app/upload
-      - ./config/rustyconfig.toml:/app/config.toml
-    environment:
-      - RUST_LOG=info
   whatsupdocker:
     image: ghcr.io/getwud/wud:8.0.1
     container_name: wud
@@ -16,8 +6,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     network_mode: service:ts-wud
     restart: unless-stopped
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     healthcheck:
       test: curl --fail http://localhost:${WUD_SERVER_PORT:-3000}/health || exit 1
       interval: 10s
@@ -29,8 +17,6 @@ services:
     depends_on:
       - prometheus
       - ts-grafana
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     environment:
       - GF_SERVER_ROOT_URL=http://grafana.dropbear-butterfly.ts.net/
     healthcheck:
@@ -47,8 +33,6 @@ services:
       - "./config/provisioning:/etc/grafana/provisioning"
   jellyfin:
     container_name: jellyfin
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     deploy:
       resources:
         limits:
@@ -74,8 +58,6 @@ services:
       - ${PWD}/pinchflat/downloads:/data/movies
   open-webui:
     container_name: open-webui
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     depends_on:
       - ts-open-webui
     environment:
@@ -85,15 +67,13 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.5.16
+    image: ghcr.io/open-webui/open-webui:v0.5.20
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
       - open-webui:/app/backend/data
   pinchflat:
     container_name: pinchflat
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     depends_on:
       - ts-pinchflat
     environment:
@@ -106,7 +86,7 @@ services:
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
       timeout: 10s
-    image: ghcr.io/kieraneglin/pinchflat:v2025.2.20
+    image: ghcr.io/kieraneglin/pinchflat:v2025.3.17
     network_mode: service:ts-pinchflat
     restart: unless-stopped
     volumes:
@@ -114,8 +94,6 @@ services:
       - ${PWD}/pinchflat/downloads:/downloads
   prometheus:
     container_name: prometheus
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     depends_on:
       - jellyfin
       - searxng
@@ -126,7 +104,7 @@ services:
       start_period: 40s
       test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
       timeout: 10s
-    image: prom/prometheus:v3.2.0
+    image: prom/prometheus:v3.2.1
     network_mode: service:ts-prometheus
     restart: unless-stopped
     volumes:
@@ -151,7 +129,6 @@ services:
       - homepage.icon=emby.png
       - homepage.href=http://searxng.home/
       - homepage.description=Meta search engine
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
     network_mode: service:ts-searxng
     restart: unless-stopped
     volumes:
@@ -173,7 +150,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: grafana
-    image: tailscale/tailscale:v1.80.0
+    image: tailscale/tailscale:v1.80.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
@@ -195,7 +172,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.80.0
+    image: tailscale/tailscale:v1.80.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
@@ -217,7 +194,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: openwebui
-    image: tailscale/tailscale:v1.80.0
+    image: tailscale/tailscale:v1.80.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
@@ -239,7 +216,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.80.0
+    image: tailscale/tailscale:v1.80.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
@@ -261,7 +238,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: prometheus
-    image: tailscale/tailscale:v1.80.0
+    image: tailscale/tailscale:v1.80.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-prometheus/state:/var/lib/tailscale
@@ -283,7 +260,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.80.0
+    image: tailscale/tailscale:v1.80.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
@@ -305,11 +282,8 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.80.0
+    image: tailscale/tailscale:v1.80.3
     restart: unless-stopped
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.tag.exclude=unstable"
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
       - ${PWD}/config:/config
@@ -330,11 +304,8 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.80.0
+    image: tailscale/tailscale:v1.80.3
     restart: unless-stopped
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.tag.exclude=unstable"
     volumes:
       - ${PWD}/tailscale-rustypaste-data/state:/var/lib/tailscale
       - ${PWD}/config:/config
