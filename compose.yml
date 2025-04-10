@@ -168,7 +168,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: grafana
-    image: tailscale/tailscale:v1.80.3
+    image: tailscale/tailscale:v1.82
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
@@ -190,7 +190,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.80.3
+    image: tailscale/tailscale:v1.82
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
@@ -212,7 +212,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: openwebui
-    image: tailscale/tailscale:v1.80.3
+    image: tailscale/tailscale:v1.82
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
@@ -234,7 +234,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.80.3
+    image: tailscale/tailscale:v1.82
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
@@ -256,7 +256,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: prometheus
-    image: tailscale/tailscale:v1.80.3
+    image: tailscale/tailscale:v1.82
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-prometheus/state:/var/lib/tailscale
@@ -278,7 +278,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.80.3
+    image: tailscale/tailscale:v1.82
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
@@ -300,7 +300,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.80.3
+    image: tailscale/tailscale:v1.82
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
@@ -322,7 +322,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.80.3
+    image: tailscale/tailscale:v1.82
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-rustypaste-data/state:/var/lib/tailscale
