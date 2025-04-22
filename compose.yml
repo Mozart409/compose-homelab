@@ -14,6 +14,13 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    labels:
+      - "wud.watch=true"
+      - "wud.strategy=semver"
+      - "wud.semver.level=major"
+      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
+      - "wud.watch.digest=true"
+
   grafana:
     container_name: grafana
     depends_on:
@@ -33,6 +40,12 @@ services:
     volumes:
       - "grafana_storage:/var/lib/grafana"
       - "./config/provisioning:/etc/grafana/provisioning"
+    labels:
+      - "wud.watch=true"
+      - "wud.strategy=semver"
+      - "wud.semver.level=major"
+      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
+      - "wud.watch.digest=true"
   tclip:
     volumes:
       - ./tclip_storage:/data
@@ -43,6 +56,12 @@ services:
       - ENABLE_WORD_WRAP=true
     restart: unless-stopped
     image: ghcr.io/tailscale-dev/tclip:latest
+  labels:
+      - "wud.watch=true"
+      - "wud.strategy=semver"
+      - "wud.semver.level=major"
+      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
+      - "wud.watch.digest=true"
   jellyfin:
     container_name: jellyfin
     tty: true
@@ -70,6 +89,12 @@ services:
     volumes:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
+    labels:
+      - "wud.watch=true"
+      - "wud.strategy=semver"
+      - "wud.semver.level=major"
+      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
+      - "wud.watch.digest=true"
   open-webui:
     container_name: open-webui
     tty: true
@@ -88,6 +113,13 @@ services:
     restart: unless-stopped
     volumes:
       - open-webui:/app/backend/data
+    labels:
+      - "wud.watch=true"
+      - "wud.strategy=semver"
+      - "wud.semver.level=major"
+      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
+      - "wud.watch.digest=true"
+
   pinchflat:
     container_name: pinchflat
     tty: true
@@ -110,6 +142,12 @@ services:
     volumes:
       - ${PWD}/pinchflat/config:/config
       - ${PWD}/pinchflat/downloads:/downloads
+    labels:
+      - "wud.watch=true"
+      - "wud.strategy=semver"
+      - "wud.semver.level=major"
+      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
+      - "wud.watch.digest=true"
   prometheus:
     container_name: prometheus
     depends_on:
@@ -134,6 +172,11 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
+    labels:
+      - "wud.watch=true"
+      - "wud.strategy=semver"
+      - "wud.semver.level=major"
+      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
   searxng:
     container_name: searxng
     depends_on:
