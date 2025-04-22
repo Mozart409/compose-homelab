@@ -15,11 +15,8 @@ services:
       retries: 3
       start_period: 10s
     labels:
-      - "wud.watch=true"
-      - "wud.strategy=semver"
-      - "wud.semver.level=major"
-      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
-      - "wud.watch.digest=true"
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - "wud.link.template=https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}"
 
   grafana:
     container_name: grafana
@@ -40,13 +37,8 @@ services:
     volumes:
       - "grafana_storage:/var/lib/grafana"
       - "./config/provisioning:/etc/grafana/provisioning"
-    labels:
-      - "wud.watch=true"
-      - "wud.strategy=semver"
-      - "wud.semver.level=major"
-      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
-      - "wud.watch.digest=true"
   tclip:
+    container_name: tclip
     volumes:
       - ./tclip_storage:/data
     environment:
@@ -56,12 +48,10 @@ services:
       - ENABLE_WORD_WRAP=true
     restart: unless-stopped
     image: ghcr.io/tailscale-dev/tclip:latest
-  labels:
-      - "wud.watch=true"
-      - "wud.strategy=semver"
-      - "wud.semver.level=major"
-      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
+    labels:
+      - "wud.tag.include=latest"
       - "wud.watch.digest=true"
+
   jellyfin:
     container_name: jellyfin
     tty: true
@@ -85,16 +75,15 @@ services:
       timeout: 30s
     image: ghcr.io/linuxserver/jellyfin:10.10.7
     network_mode: service:ts-jellyfin
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - "wud.link.template=https://github.com/jellyfin/jellyfin/releases/tag/v$${major}.$${minor}.$${patch}"
+
     restart: unless-stopped
     volumes:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
-    labels:
-      - "wud.watch=true"
-      - "wud.strategy=semver"
-      - "wud.semver.level=major"
-      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
-      - "wud.watch.digest=true"
+
   open-webui:
     container_name: open-webui
     tty: true
@@ -108,17 +97,14 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.6.2
+    image: ghcr.io/open-webui/open-webui:v0.6.5
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
       - open-webui:/app/backend/data
     labels:
-      - "wud.watch=true"
-      - "wud.strategy=semver"
-      - "wud.semver.level=major"
-      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
-      - "wud.watch.digest=true"
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - "wud.link.template=https://github.com/open-webui/open-webui/releases/tag/v$${major}.$${minor}.$${patch}"
 
   pinchflat:
     container_name: pinchflat
@@ -130,6 +116,9 @@ services:
       - TZ=Europe/Berlin
       - LOG_LEVEL=info
       - ENABLE_PROMETHEUS=1
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - "wud.link.template=https://github.com/kieraneglin/pinchflat/releases/tag/$${major}.$${minor}.$${patch}"
     healthcheck:
       interval: 30s
       retries: 3
@@ -142,12 +131,6 @@ services:
     volumes:
       - ${PWD}/pinchflat/config:/config
       - ${PWD}/pinchflat/downloads:/downloads
-    labels:
-      - "wud.watch=true"
-      - "wud.strategy=semver"
-      - "wud.semver.level=major"
-      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
-      - "wud.watch.digest=true"
   prometheus:
     container_name: prometheus
     depends_on:
@@ -172,11 +155,7 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
-    labels:
-      - "wud.watch=true"
-      - "wud.strategy=semver"
-      - "wud.semver.level=major"
-      - "wud.tag.exclude=/(alpha|beta|rc|dev|unstable|preview|-)/i"
+
   searxng:
     container_name: searxng
     depends_on:
