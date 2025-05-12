@@ -17,7 +17,6 @@ services:
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}"
-
   grafana:
     container_name: grafana
     depends_on:
@@ -50,11 +49,10 @@ services:
       - ENABLE_LINE_NUMBERS=true
       - ENABLE_WORD_WRAP=true
     restart: unless-stopped
-    image: ghcr.io/tailscale-dev/tclip:latest
+    image: ghcr.io/tailscale-dev/tclip:latest@sha256:722db0f43d67682768d2c0fa05843026a585693b569491878fd7f9d839dd7b09
     labels:
       - "wud.tag.include=latest"
       - "wud.watch.digest=true"
-
   jellyfin:
     container_name: jellyfin
     tty: true
@@ -81,12 +79,10 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/jellyfin/jellyfin/releases/tag/v$${major}.$${minor}.$${patch}"
-
     restart: unless-stopped
     volumes:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
-
   open-webui:
     container_name: open-webui
     tty: true
@@ -108,7 +104,6 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/open-webui/open-webui/releases/tag/v$${major}.$${minor}.$${patch}"
-
   pinchflat:
     container_name: pinchflat
     tty: true
@@ -161,7 +156,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
-
   searxng:
     container_name: searxng
     depends_on:
@@ -205,7 +199,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: grafana
-    image: tailscale/tailscale:v1.82.0
+    image: tailscale/tailscale:v1.82.5
     restart: unless-stopped
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
@@ -230,7 +224,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.82.0
+    image: tailscale/tailscale:v1.82.5
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
@@ -255,7 +249,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: openwebui
-    image: tailscale/tailscale:v1.82.0
+    image: tailscale/tailscale:v1.82.5
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
@@ -280,7 +274,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.82.0
+    image: tailscale/tailscale:v1.82.5
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
@@ -305,7 +299,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: prometheus
-    image: tailscale/tailscale:v1.82.0
+    image: tailscale/tailscale:v1.82.5
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-prometheus/state:/var/lib/tailscale
@@ -330,7 +324,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.82.0
+    image: tailscale/tailscale:v1.82.5
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
@@ -355,7 +349,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.82.0
+    image: tailscale/tailscale:v1.82.5
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
