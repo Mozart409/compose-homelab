@@ -30,7 +30,7 @@ services:
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       timeout: 10s
-    image: grafana/grafana-oss:11.6.1
+    image: grafana/grafana-oss:12.0.0
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/grafana/grafana/releases/tag/$${major}.$${minor}.$${patch}"
@@ -96,7 +96,7 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.6.5
+    image: ghcr.io/open-webui/open-webui:v0.6.9
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
@@ -148,7 +148,7 @@ services:
         "http://localhost:9090/-/healthy",
       ]
       timeout: 10s
-    image: prom/prometheus:v3.3.0
+    image: prom/prometheus:v3.3.1
     network_mode: service:ts-prometheus
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
