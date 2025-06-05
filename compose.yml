@@ -28,9 +28,9 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
       timeout: 10s
-    image: grafana/grafana-oss:12.0.0
+    image: grafana/grafana-oss:12.0.1
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/grafana/grafana/releases/tag/$${major}.$${minor}.$${patch}"
@@ -72,7 +72,7 @@ services:
     healthcheck:
       interval: 3m
       retries: 3
-      test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8096/health" ]
       timeout: 30s
     image: ghcr.io/linuxserver/jellyfin:10.10.7
     network_mode: service:ts-jellyfin
@@ -95,8 +95,8 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.6.9
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+    image: ghcr.io/open-webui/open-webui:v0.6.13
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
@@ -121,7 +121,7 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8945/healthcheck" ]
       timeout: 10s
     image: ghcr.io/kieraneglin/pinchflat:v2025.3.17
     network_mode: service:ts-pinchflat
@@ -139,16 +139,9 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: [
-        "CMD",
-        "wget",
-        "-nv",
-        "-t1",
-        "--spider",
-        "http://localhost:9090/-/healthy",
-      ]
+      test: [ "CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy" ]
       timeout: 10s
-    image: prom/prometheus:v3.3.1
+    image: prom/prometheus:v3.4.1
     network_mode: service:ts-prometheus
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
@@ -167,7 +160,7 @@ services:
       interval: 1m30s
       retries: 3
       start_period: 40s
-      test: ["CMD", "wget", "-nv", "-t1", "--spider", "0.0.0.0:8080/"]
+      test: [ "CMD", "wget", "-nv", "-t1", "--spider", "0.0.0.0:8080/" ]
       timeout: 10s
     image: searxng/searxng:2025.4.22-e9157b3c1
     labels:
@@ -199,7 +192,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: grafana
-    image: tailscale/tailscale:v1.82.5
+    image: tailscale/tailscale:v1.84.0
     restart: unless-stopped
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
@@ -224,7 +217,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.82.5
+    image: tailscale/tailscale:v1.84.0
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
@@ -249,7 +242,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: openwebui
-    image: tailscale/tailscale:v1.82.5
+    image: tailscale/tailscale:v1.84.0
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
@@ -274,7 +267,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.82.5
+    image: tailscale/tailscale:v1.84.0
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
@@ -299,7 +292,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: prometheus
-    image: tailscale/tailscale:v1.82.5
+    image: tailscale/tailscale:v1.84.0
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-prometheus/state:/var/lib/tailscale
@@ -324,7 +317,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.82.5
+    image: tailscale/tailscale:v1.84.0
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
@@ -349,7 +342,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.82.5
+    image: tailscale/tailscale:v1.84.0
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
