@@ -111,6 +111,8 @@ services:
       - OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET}
       - OAUTH_PROVIDER_NAME="Pocket ID"
       - OPENID_PROVIDER_URL=${OPENID_PROVIDER_URL}
+      - OAUTH_MERGE_ACCOUNTS_BY_EMAIL=true
+      - WEBUI_URL=https://openwebui.dropbear-butterfly.ts.net
     healthcheck:
       interval: 30s
       retries: 3
@@ -159,7 +161,14 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
+      test: [
+        "CMD",
+        "wget",
+        "-nv",
+        "-t1",
+        "--spider",
+        "http://localhost:9090/-/healthy",
+      ]
       timeout: 10s
     image: prom/prometheus:v3.4.1
     network_mode: service:ts-prometheus
