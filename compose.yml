@@ -74,7 +74,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1000M
+          memory: 5000M
     depends_on:
       - pinchflat
       - ts-jellyfin
@@ -97,6 +97,7 @@ services:
     volumes:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
+      - ${PWD}/movies:/data/my_movies
   open-webui:
     container_name: open-webui
     tty: true
@@ -161,14 +162,7 @@ services:
       interval: 30s
       retries: 3
       start_period: 40s
-      test: [
-        "CMD",
-        "wget",
-        "-nv",
-        "-t1",
-        "--spider",
-        "http://localhost:9090/-/healthy",
-      ]
+      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
       timeout: 10s
     image: prom/prometheus:v3.4.1
     network_mode: service:ts-prometheus
