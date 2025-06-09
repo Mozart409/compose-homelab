@@ -98,6 +98,7 @@ services:
       - ${PWD}/jellyfin/library:/config
       - ${PWD}/pinchflat/downloads:/data/movies
       - ${PWD}/movies:/data/my_movies
+      - ${PWD}/blueray:/data/blueray
   open-webui:
     container_name: open-webui
     tty: true
