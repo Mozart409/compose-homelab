@@ -11,6 +11,7 @@ services:
       - ./syncthing/config:/config
       - ./blueray:/blueray
       - ./movies:/movies
+      - ./youtube:/youtube
     ports:
       - 8384:8384
       - 22000:22000/tcp
