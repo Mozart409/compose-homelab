@@ -55,7 +55,6 @@ services:
         limits:
           memory: 5000M
     depends_on:
-      - pinchflat
       - ts-jellyfin
     environment:
       - PUID=0
@@ -75,7 +74,7 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/jellyfin/library:/config
-      - ${PWD}/pinchflat/downloads:/data/movies
+      - ${PWD}/youtube:/data/youtube
       - ${PWD}/movies:/data/my_movies
       - ${PWD}/blueray:/data/blueray
   open-webui:
@@ -107,31 +106,6 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/open-webui/open-webui/releases/tag/v$${major}.$${minor}.$${patch}"
-  pinchflat:
-    container_name: pinchflat
-    tty: true
-    stdin_open: true
-    depends_on:
-      - ts-pinchflat
-    environment:
-      - TZ=Europe/Berlin
-      - LOG_LEVEL=info
-      - ENABLE_PROMETHEUS=1
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/kieraneglin/pinchflat/releases/tag/$${major}.$${minor}.$${patch}"
-    healthcheck:
-      interval: 30s
-      retries: 3
-      start_period: 40s
-      test: ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
-      timeout: 10s
-    image: ghcr.io/kieraneglin/pinchflat:v2025.6.6
-    network_mode: service:ts-pinchflat
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/pinchflat/config:/config
-      - ${PWD}/pinchflat/downloads:/downloads
   searxng:
     container_name: searxng
     depends_on:
@@ -204,31 +178,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-  ts-pinchflat:
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-pinchflat
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/pinchflat.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: pinchflat
-    image: tailscale/tailscale:v1.84.2
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
       - ${PWD}/config:/config
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
