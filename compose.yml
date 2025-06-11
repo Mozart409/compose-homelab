@@ -17,28 +17,6 @@ services:
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}"
-  grafana:
-    container_name: grafana
-    depends_on:
-      - prometheus
-      - ts-grafana
-    environment:
-      - GF_SERVER_ROOT_URL=http://grafana.dropbear-butterfly.ts.net/
-    healthcheck:
-      interval: 30s
-      retries: 3
-      start_period: 40s
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      timeout: 10s
-    image: grafana/grafana-oss:12.0.1
-    labels:
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/grafana/grafana/releases/tag/$${major}.$${minor}.$${patch}"
-    network_mode: service:ts-grafana
-    restart: unless-stopped
-    volumes:
-      - "grafana_storage:/var/lib/grafana"
-      - "./config/provisioning:/etc/grafana/provisioning"
   tclip:
     container_name: tclip
     volumes:
@@ -56,6 +34,7 @@ services:
   actual-ai:
     image: docker.io/sakowicz/actual-ai:2.2.0
     restart: unless-stopped
+    container_name: actual-ai
     environment:
       ACTUAL_SERVER_URL: https://actual.dropbear-butterfly.ts.net
       ACTUAL_PASSWORD: ${ACTUAL_PASSWORD}
@@ -153,26 +132,6 @@ services:
     volumes:
       - ${PWD}/pinchflat/config:/config
       - ${PWD}/pinchflat/downloads:/downloads
-  prometheus:
-    container_name: prometheus
-    depends_on:
-      - jellyfin
-      - searxng
-      - ts-prometheus
-    healthcheck:
-      interval: 30s
-      retries: 3
-      start_period: 40s
-      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:9090/-/healthy"]
-      timeout: 10s
-    image: prom/prometheus:v3.4.1
-    network_mode: service:ts-prometheus
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/prometheus/prometheus/releases/tag/v$${major}.$${minor}.$${patch}"
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/config/prometheus.yml:/etc/prometheus/prometheus.yml
   searxng:
     container_name: searxng
     depends_on:
@@ -199,31 +158,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/searxng:/etc/searxng
-  ts-grafana:
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-grafana
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/grafana.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: grafana
-    image: tailscale/tailscale:v1.84.0
-    restart: unless-stopped
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-    volumes:
-      - ${PWD}/tailscale-grafana/state:/var/lib/tailscale
-      - ${PWD}/config:/config
   ts-jellyfin:
     cap_add:
       - net_admin
@@ -299,31 +233,6 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-  ts-prometheus:
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-prometheus
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/prometheus.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: prometheus
-    image: tailscale/tailscale:v1.84.0
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-prometheus/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
   ts-searxng:
     cap_add:
       - net_admin
@@ -375,8 +284,6 @@ services:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
 volumes:
-  grafana_storage: {}
-  rusty_upload: {}
   open-webui:
     external: true
     name: open-webui
