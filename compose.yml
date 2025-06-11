@@ -4,8 +4,8 @@ services:
     container_name: syncthing
     hostname: homelab #optional
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=0
+      - PGID=0
       - TZ=Etc/UTC
     volumes:
       - ./syncthing/config:/config
