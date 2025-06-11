@@ -99,7 +99,7 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.6.13
+    image: ghcr.io/open-webui/open-webui:v0.6.14
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
@@ -175,7 +175,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.84.0
+    image: tailscale/tailscale:v1.84.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
@@ -200,7 +200,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: openwebui
-    image: tailscale/tailscale:v1.84.0
+    image: tailscale/tailscale:v1.84.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
@@ -225,7 +225,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.84.0
+    image: tailscale/tailscale:v1.84.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat/state:/var/lib/tailscale
@@ -250,7 +250,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.84.0
+    image: tailscale/tailscale:v1.84.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
@@ -275,7 +275,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.84.0
+    image: tailscale/tailscale:v1.84.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
