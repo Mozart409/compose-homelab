@@ -1,4 +1,23 @@
 services:
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:1.29.7
+    container_name: syncthing
+    hostname: homelab #optional
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Etc/UTC
+    volumes:
+      - ./syncthing/config:/config
+      - ./blueray:/blueray
+      - ./movies:/moviesAdd commentMore actions
+      - ./youtube:/youtube
+    ports:
+      - 8384:8384
+      - 22000:22000/tcp
+      - 22000:22000/udp
+      - 21027:21027/udp
+    restart: unless-stopped
   pinchflat:
     image: ghcr.io/kieraneglin/pinchflat:v2025.6.6
     tty: true
