@@ -62,21 +62,6 @@ services:
     labels:
       - "wud.tag.include=latest"
       - "wud.watch.digest=true"
-  actual-ai:
-    image: docker.io/sakowicz/actual-ai:2.2.0
-    restart: unless-stopped
-    container_name: actual-ai
-    environment:
-      ACTUAL_SERVER_URL: https://actual.dropbear-butterfly.ts.net
-      ACTUAL_PASSWORD: ${ACTUAL_PASSWORD}
-      ACTUAL_BUDGET_ID: ${ACTUAL_BUDGET_ID} # This is the ID from Settings → Show advanced settings → Sync ID
-      CLASSIFICATION_SCHEDULE_CRON: 0 * * * * # How often to run classification.
-      LLM_PROVIDER: ollama # Can be "openai", "anthropic", "google-generative-ai", "ollama" or "groq"
-      FEATURES: '["classifyOnStartup", "syncAccountsBeforeClassify", "freeWebSearch", "suggestNewCategories"]'
-      OLLAMA_MODEL: phi4-mini:3.8b
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
-      NOT_GUESSED_TAG: "#actual-ai-miss"
-      GUESSED_TAG: "#actual-ai"
   jellyfin:
     container_name: jellyfin
     tty: true
@@ -129,7 +114,7 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.6.14
+    image: ghcr.io/open-webui/open-webui:v0.6.15
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
@@ -180,7 +165,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.84.2
+    image: tailscale/tailscale:v1.84.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
@@ -205,7 +190,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: openwebui
-    image: tailscale/tailscale:v1.84.2
+    image: tailscale/tailscale:v1.84.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
@@ -230,7 +215,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.84.2
+    image: tailscale/tailscale:v1.84.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
@@ -255,7 +240,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.84.2
+    image: tailscale/tailscale:v1.84.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
@@ -280,7 +265,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.84.2
+    image: tailscale/tailscale:v1.84.3
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat-data/state:/var/lib/tailscale
