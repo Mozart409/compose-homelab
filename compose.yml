@@ -1,4 +1,15 @@
 services:
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:v1.9.1
+    container_name: node_exporter
+    command:
+      - '--path.rootfs=/host'
+    network_mode: service:ts-node_exporter
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+
   syncthing:
     image: lscr.io/linuxserver/syncthing:1.29.7
     container_name: syncthing
@@ -269,6 +280,31 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat-data/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
+  ts-node-exporter:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-node-exporter
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/node-exporter.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: node-exporter
+    image: tailscale/tailscale:v1.84.3
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-node-exporter-data/state:/var/lib/tailscale
       - ${PWD}/config:/config
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
