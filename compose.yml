@@ -3,12 +3,12 @@ services:
     image: quay.io/prometheus/node-exporter:v1.9.1
     container_name: node_exporter
     command:
-      - '--path.rootfs=/host'
+      - "--path.rootfs=/host"
     network_mode: service:ts-node-exporter
     pid: host
     restart: unless-stopped
     volumes:
-      - '/:/host:ro,rslave'
+      - "/:/host:ro,rslave"
 
   syncthing:
     image: lscr.io/linuxserver/syncthing:1.29.7
