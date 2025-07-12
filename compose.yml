@@ -7,6 +7,12 @@ services:
     network_mode: service:ts-node-exporter
     pid: host
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     volumes:
       - "/:/host:ro,rslave"
 
@@ -29,6 +35,12 @@ services:
       - 22000:22000/udp
       - 21027:21027/udp
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8384/rest/system/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
   pinchflat:
     image: ghcr.io/kieraneglin/pinchflat:v2025.6.6
     tty: true
@@ -42,6 +54,12 @@ services:
     volumes:
       - ./pinchflat/config:/config
       - ./youtube:/downloads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8945/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
   whatsupdocker:
     image: ghcr.io/getwud/wud:8.1.1
     tty: true
@@ -70,6 +88,12 @@ services:
       - ENABLE_LINE_NUMBERS=true
       - ENABLE_WORD_WRAP=true
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     image: ghcr.io/tailscale-dev/tclip:latest@sha256:722db0f43d67682768d2c0fa05843026a585693b569491878fd7f9d839dd7b09
     labels:
       - "wud.tag.include=latest"
