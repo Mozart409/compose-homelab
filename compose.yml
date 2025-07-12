@@ -36,7 +36,7 @@ services:
       - 21027:21027/udp
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8384/rest/system/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:8384/rest/noauth/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -88,13 +88,7 @@ services:
       - ENABLE_LINE_NUMBERS=true
       - ENABLE_WORD_WRAP=true
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    image: ghcr.io/tailscale-dev/tclip:latest@sha256:722db0f43d67682768d2c0fa05843026a585693b569491878fd7f9d839dd7b09
+    image: ghcr.io/tailscale-dev/tclip:latest@sha256:c6fc003a7ce24eff96a36b6055b316c307a798399555dba545452e6aeafca3c7
     labels:
       - "wud.tag.include=latest"
       - "wud.watch.digest=true"
