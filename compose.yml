@@ -43,7 +43,7 @@ services:
       - ./pinchflat/config:/config
       - ./youtube:/downloads
   whatsupdocker:
-    image: ghcr.io/getwud/wud:8.0.1
+    image: ghcr.io/getwud/wud:8.1.1
     tty: true
     stdin_open: true
     container_name: wud
