@@ -15,7 +15,6 @@ services:
       start_period: 10s
     volumes:
       - "/:/host:ro,rslave"
-
   syncthing:
     image: lscr.io/linuxserver/syncthing:1.29.7
     container_name: syncthing
@@ -51,6 +50,7 @@ services:
     environment:
       - TZ=Europe/Berlin
       - ENABLE_PROMETHEUS=1
+      - LOG_LEVEL=info
     volumes:
       - ./pinchflat/config:/config
       - ./youtube:/downloads
