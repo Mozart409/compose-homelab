@@ -15,6 +15,8 @@ services:
       start_period: 10s
     volumes:
       - "/:/host:ro,rslave"
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
   syncthing:
     image: lscr.io/linuxserver/syncthing:1.29.7
     container_name: syncthing
@@ -40,6 +42,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    labels:
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
   pinchflat:
     image: ghcr.io/kieraneglin/pinchflat:v2025.6.6
     tty: true
