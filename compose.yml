@@ -18,7 +18,7 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
   syncthing:
-    image: lscr.io/linuxserver/syncthing:1.29.7
+    image: lscr.io/linuxserver/syncthing:1.30.0
     container_name: syncthing
     hostname: homelab #optional
     environment:
@@ -148,7 +148,7 @@ services:
       retries: 3
       start_period: 40s
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.6.15
+    image: ghcr.io/open-webui/open-webui:v0.6.18
     network_mode: service:ts-open-webui
     restart: unless-stopped
     volumes:
