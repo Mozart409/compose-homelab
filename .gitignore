@@ -25,3 +25,11 @@ tclip_storage/
 movies/
 blueray/
 syncthing/
+audio/
+config/tandoor.json
+mediafiles/
+searxng/settings.yml.new
+series/
+tv/
+youtube/
+

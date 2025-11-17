@@ -1,6 +1,48 @@
 services:
+  tandoor:
+    image: vabene1111/recipes:2.3.3
+    container_name: tandoor
+    restart: unless-stopped
+    network_mode: service:ts-tandoor
+    volumes:
+      - staticfiles:/opt/recipes/staticfiles
+      - ./mediafiles:/opt/recipes/mediafiles
+    depends_on:
+      - tandoor_db
+    environment:
+      TZ: Europe/Berlin
+      TANDOOR_PORT: 8080
+      # https://github.com/TandoorRecipes/recipes/issues/3478
+      ALLOWED_HOSTS: tandoor.dropbear-butterfly.ts.net,127.0.0.1
+      SECRET_KEY: Ex5PEs6AB+tcLAo9JSWZh5AwR2eDdIGyp1Ahsgqvcma0pj9bzj
+      SOCIAL_PROVIDERS: ${TANDOOR_SOCIAL_PROVIDERS}
+      SOCIALACCOUNT_PROVIDERS: ${TANDOOR_SOCIALACCOUNT_PROVIDERS}
+      DB_ENGINE: django.db.backends.postgresql
+      POSTGRES_HOST: tandoor_db
+      POSTGRES_DB: tandoor
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: tandoor
+      POSTGRES_PASSWORD: abc123abc123
+  tandoor_db:
+    image: postgres:18.0-alpine3.22
+    container_name: tandoor_db
+    restart: unless-stopped
+    volumes:
+      - tandoor_pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: tandoor
+      POSTGRES_PASSWORD: abc123abc123
+      POSTGRES_DB: tandoor
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 15s
+    labels:
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
   node-exporter:
-    image: quay.io/prometheus/node-exporter:v1.9.1
+    image: quay.io/prometheus/node-exporter:v1.10.0
     container_name: node_exporter
     command:
       - "--path.rootfs=/host"
@@ -8,7 +50,14 @@ services:
     pid: host
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      test: [
+        "CMD",
+        "wget",
+        "--no-verbose",
+        "--tries=1",
+        "--spider",
+        "http://localhost:9100/metrics",
+      ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -18,7 +67,7 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
   syncthing:
-    image: lscr.io/linuxserver/syncthing:1.30.0
+    image: lscr.io/linuxserver/syncthing:2.0.10
     container_name: syncthing
     hostname: homelab #optional
     environment:
@@ -28,8 +77,11 @@ services:
     volumes:
       - ./syncthing/config:/config
       - ./blueray:/blueray
-      - ./movies:/moviesAdd commentMore actions
+      - ./movies:/movies
       - ./youtube:/youtube
+      - ./series:/series
+      - ./tv:/tv
+      - ./audio:/audio
     ports:
       - 8384:8384
       - 22000:22000/tcp
@@ -45,7 +97,7 @@ services:
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
   pinchflat:
-    image: ghcr.io/kieraneglin/pinchflat:v2025.6.6
+    image: ghcr.io/kieraneglin/pinchflat@sha256:01b4f98aabaf3f5fe394213f7a32578c9e84e42080f52e2f8334021a4473b202
     tty: true
     stdin_open: true
     container_name: pinchflat
@@ -100,10 +152,6 @@ services:
     container_name: jellyfin
     tty: true
     stdin_open: true
-    deploy:
-      resources:
-        limits:
-          memory: 5000M
     depends_on:
       - ts-jellyfin
     environment:
@@ -116,7 +164,7 @@ services:
       retries: 3
       test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
       timeout: 30s
-    image: ghcr.io/linuxserver/jellyfin:10.10.7
+    image: ghcr.io/linuxserver/jellyfin:10.11.1
     network_mode: service:ts-jellyfin
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
@@ -127,35 +175,9 @@ services:
       - ${PWD}/youtube:/data/youtube
       - ${PWD}/movies:/data/my_movies
       - ${PWD}/blueray:/data/blueray
-  open-webui:
-    container_name: open-webui
-    tty: true
-    stdin_open: true
-    depends_on:
-      - ts-open-webui
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
-      - ENABLE_OAUTH_SIGNUP=true
-      - OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
-      - OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET}
-      - OAUTH_PROVIDER_NAME="Pocket ID"
-      - OPENID_PROVIDER_URL=${OPENID_PROVIDER_URL}
-      - OAUTH_MERGE_ACCOUNTS_BY_EMAIL=true
-      - WEBUI_URL=https://openwebui.dropbear-butterfly.ts.net
-    healthcheck:
-      interval: 30s
-      retries: 3
-      start_period: 40s
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    image: ghcr.io/open-webui/open-webui:v0.6.18
-    network_mode: service:ts-open-webui
-    restart: unless-stopped
-    volumes:
-      - open-webui:/app/backend/data
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/open-webui/open-webui/releases/tag/v$${major}.$${minor}.$${patch}"
+      - ${PWD}/series:/data/series
+      - ${PWD}/tv:/data/tv
+      - ${PWD}/audio:/data/audio
   searxng:
     container_name: searxng
     depends_on:
@@ -199,35 +221,10 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.84.3
+    image: tailscale/tailscale:v1.88.4
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-  ts-open-webui:
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-open-webui
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/openwebui.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: openwebui
-    image: tailscale/tailscale:v1.84.3
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-open-webui/state:/var/lib/tailscale
       - ${PWD}/config:/config
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
@@ -249,7 +246,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.84.3
+    image: tailscale/tailscale:v1.88.4
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
@@ -274,7 +271,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.84.3
+    image: tailscale/tailscale:v1.88.4
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
@@ -299,7 +296,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.84.3
+    image: tailscale/tailscale:v1.88.4
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat-data/state:/var/lib/tailscale
@@ -324,7 +321,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: node-exporter
-    image: tailscale/tailscale:v1.84.3
+    image: tailscale/tailscale:v1.88.4
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-node-exporter-data/state:/var/lib/tailscale
@@ -332,7 +329,31 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
+  ts-tandoor:
+    cap_add:
+      - net_admin
+      - sys_module
+    container_name: ts-tandoor
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    dns:
+      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
+      - 1.1.1.1 # For external lookups.
+    environment:
+      - "TS_AUTHKEY=${TS_AUTH_KEY}"
+      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
+      - "TS_SERVE_CONFIG=/config/tandoor.json"
+      - "TS_STATE_DIR=/var/lib/tailscale"
+      - "TS_USERSPACE=false"
+    hostname: tandoor
+    image: tailscale/tailscale:v1.88.4
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale-tandoor-data/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
 volumes:
-  open-webui:
-    external: true
-    name: open-webui
+  staticfiles:
+  tandoor_pg_data:
