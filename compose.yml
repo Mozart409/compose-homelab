@@ -99,7 +99,7 @@ services:
     environment:
       - TZ=Europe/Berlin
       - ENABLE_PROMETHEUS=1
-      - LOG_LEVEL=info
+      - LOG_LEVEL=warning
     volumes:
       - ./pinchflat/config:/config
       - ./youtube:/downloads
