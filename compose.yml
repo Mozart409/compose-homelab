@@ -171,10 +171,24 @@ services:
       - ${PWD}/series:/data/series
       - ${PWD}/tv:/data/tv
       - ${PWD}/audio:/data/audio
+  valkey-searxng:
+    container_name: valkey-searxng
+    image: valkey/valkey:9.0.1-alpine3.23
+    restart: unless-stopped
+    network_mode: service:ts-searxng
+    command: valkey-server --bind 0.0.0.0
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
   searxng:
     container_name: searxng
     depends_on:
-      - ts-searxng
+      ts-searxng:
+        condition: service_started
+      valkey-searxng:
+        condition: service_healthy
     environment:
       - BASE_URL=https://searxng.dropbear-butterfly.ts.net/
       - INSTANCE_NAME=SearxNG
