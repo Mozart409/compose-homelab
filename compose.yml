@@ -174,11 +174,11 @@ services:
       retries: 3
       test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
       timeout: 30s
-    image: ghcr.io/linuxserver/jellyfin:10.11.1
+    image: ghcr.io/linuxserver/jellyfin:10.11.6
     network_mode: service:ts-jellyfin
     labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/jellyfin/jellyfin/releases/tag/v$${major}.$${minor}.$${patch}"
+      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - "wud.link.template=https://github.com/linuxserver/docker-jellyfin/pkgs/container/jellyfin/versions"
     restart: unless-stopped
     volumes:
       - ${PWD}/jellyfin/library:/config
