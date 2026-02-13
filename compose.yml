@@ -96,6 +96,7 @@ services:
     container_name: pinchflat
     network_mode: service:ts-pinchflat
     restart: unless-stopped
+    stop_grace_period: 30s
     environment:
       - TZ=Europe/Berlin
       - ENABLE_PROMETHEUS=1
