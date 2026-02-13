@@ -1,6 +1,6 @@
 services:
   tandoor:
-    image: vabene1111/recipes:2.5
+    image: vabene1111/recipes:2.5.0
     container_name: tandoor
     restart: unless-stopped
     stop_grace_period: 30s
@@ -177,7 +177,7 @@ services:
     image: ghcr.io/linuxserver/jellyfin:10.11.6
     network_mode: service:ts-jellyfin
     labels:
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - 'wud.tag.include=^\d+\.\d+\.\d+$'
       - "wud.link.template=https://github.com/linuxserver/docker-jellyfin/pkgs/container/jellyfin/versions"
     restart: unless-stopped
     volumes:
@@ -200,6 +200,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    labels:
+      - 'wud.tag.include=^\d+\.\d+\.\d+-alpine'
+      - "wud.link.template=https://github.com/valkey-io/valkey/releases/tag/$${major}.$${minor}.$${patch}"
   searxng:
     container_name: searxng
     stop_grace_period: 30s
