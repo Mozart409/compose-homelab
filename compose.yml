@@ -1,6 +1,6 @@
 services:
   tandoor:
-    image: vabene1111/recipes:2.5.0
+    image: vabene1111/recipes:2.5.3
     container_name: tandoor
     restart: unless-stopped
     stop_grace_period: 30s
@@ -124,7 +124,7 @@ services:
       retries: 3
       start_period: 60s
   whatsupdocker:
-    image: ghcr.io/getwud/wud:8.1.1
+    image: ghcr.io/getwud/wud:8.2.2
     tty: true
     stdin_open: true
     container_name: wud
@@ -190,7 +190,7 @@ services:
       - ${PWD}/audio:/data/audio
   valkey-searxng:
     container_name: valkey-searxng
-    image: valkey/valkey:9.0.2-alpine3.23
+    image: valkey/valkey:9.0.3-alpine3.23
     restart: unless-stopped
     stop_grace_period: 30s
     network_mode: service:ts-searxng
@@ -251,7 +251,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: jellyfin
-    image: tailscale/tailscale:v1.94.1
+    image: tailscale/tailscale:v1.94.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
@@ -277,7 +277,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: searxng
-    image: tailscale/tailscale:v1.94.1
+    image: tailscale/tailscale:v1.94.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
@@ -303,7 +303,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: wud
-    image: tailscale/tailscale:v1.94.1
+    image: tailscale/tailscale:v1.94.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
@@ -329,7 +329,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: pinchflat
-    image: tailscale/tailscale:v1.94.1
+    image: tailscale/tailscale:v1.94.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-pinchflat-data/state:/var/lib/tailscale
@@ -355,7 +355,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: node-exporter
-    image: tailscale/tailscale:v1.94.1
+    image: tailscale/tailscale:v1.94.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-node-exporter-data/state:/var/lib/tailscale
@@ -381,7 +381,7 @@ services:
       - "TS_STATE_DIR=/var/lib/tailscale"
       - "TS_USERSPACE=false"
     hostname: tandoor
-    image: tailscale/tailscale:v1.94.1
+    image: tailscale/tailscale:v1.94.2
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale-tandoor-data/state:/var/lib/tailscale
