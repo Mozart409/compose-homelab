@@ -103,7 +103,7 @@ services:
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
   pinchflat:
-    image: ghcr.io/kieraneglin/pinchflat@sha256:01b4f98aabaf3f5fe394213f7a32578c9e84e42080f52e2f8334021a4473b202
+    image: ghcr.io/mozart409/pinchflat@sha256:e01abef69abc7aeadc875846ba3c3b23ffabacba539348431b90a9dbc4aead38
     tty: true
     stdin_open: true
     container_name: pinchflat
