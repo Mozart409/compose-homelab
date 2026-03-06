@@ -72,3 +72,89 @@ SELECT source_id, metadata_filepath, fanart_filepath, poster_filepath, banner_fi
   - banner.jpg
   - tvshow.nfo
 ```
+
+## Issue 4: SQLite "Database busy" errors blocking job processing
+
+**Problem:** The Oban job queue can get stuck with "Database busy" errors, preventing all indexing and download jobs from processing. This occurs when:
+
+1. Long-running operations hold database locks
+2. The WAL (Write-Ahead Log) file grows very large (observed 252MB)
+3. Multiple concurrent operations compete for write access
+
+**Symptoms:**
+
+- Logs show repeated `(Exqlite.Error) Database busy` errors
+- `Oban.Stager` GenServer terminates repeatedly
+- Jobs stay in `available` state but never execute
+- `last_indexed_at` for sources becomes very stale (months old)
+
+**Example log:**
+
+```
+[error] | GenServer {Oban.Registry, {Oban, Oban.Stager}} terminating
+** (Exqlite.Error) Database busy
+UPDATE "oban_jobs" AS o0 SET "state" = ? WHERE (o0."id" IN (?))
+```
+
+**Root cause:** SQLite's `busy_timeout` PRAGMA defaults to 0 in the application, meaning queries fail immediately instead of waiting for locks to be released.
+
+**Suggested fixes:**
+
+1. **Set busy_timeout PRAGMA** - Configure Exqlite/Ecto to use a reasonable busy_timeout (e.g., 5000ms) so queries wait for locks instead of failing immediately
+2. **Configure WAL autocheckpoint** - Ensure WAL doesn't grow unbounded; set `wal_autocheckpoint` to a reasonable value
+3. **Add connection pool limits** - Limit concurrent database writers to reduce lock contention
+4. **Implement job queue cleanup** - Automatically prune old completed/cancelled jobs to keep the oban_jobs table smaller
+
+**Workaround:** Restart Pinchflat container to clear stuck state and checkpoint WAL:
+
+```bash
+docker compose restart pinchflat
+```
+
+**Manual database maintenance:**
+
+```bash
+# Stop Pinchflat first
+docker compose stop pinchflat
+
+# Clean old jobs and optimize
+sqlite3 /path/to/pinchflat.db "
+  DELETE FROM oban_jobs WHERE state = 'completed' AND completed_at < datetime('now', '-7 days');
+  DELETE FROM oban_jobs WHERE state = 'cancelled' AND scheduled_at < datetime('now', '-7 days');
+  ANALYZE;
+  VACUUM;
+"
+
+# Start Pinchflat
+docker compose start pinchflat
+```
+
+## Issue 5: Orphaned deletion jobs for non-existent sources
+
+**Problem:** When a source is deleted, a `SourceDeletionWorker` job is created. If this job fails repeatedly (e.g., due to database busy errors or files already deleted), it keeps retrying indefinitely even after the source no longer exists.
+
+**Example:** Source ID 97 was deleted, but the deletion job kept retrying (14 attempts) even though there was nothing left to delete.
+
+**Suggested fix:**
+
+1. Add a check at the start of `SourceDeletionWorker` to verify the source still exists
+2. If source doesn't exist, mark job as completed (or cancelled) instead of retrying
+3. Consider adding idempotency - if files/records are already gone, succeed gracefully
+
+## Issue 6: Sources with `last_indexed_at = NULL` never get indexed
+
+**Problem:** Some sources show `last_indexed_at` as NULL in the database, indicating they were never successfully indexed. These sources have indexing jobs in the queue but the jobs may have failed silently or been stuck.
+
+**Example sources with NULL `last_indexed_at`:**
+
+- PietSmietTV (id 91)
+- Rory Alexander (id 93)
+- BigfryTV (id 94)
+- Multiple sources added on 2026-03-06 (ids 101-118)
+
+**Suggested fix:**
+
+1. Add monitoring/alerting for sources that haven't been indexed within expected timeframe
+2. Add a "Force re-index" button in the UI
+3. Log more details when indexing jobs fail
+4. Consider a health check that identifies sources with stale/null `last_indexed_at`
