@@ -158,3 +158,73 @@ docker compose start pinchflat
 2. Add a "Force re-index" button in the UI
 3. Log more details when indexing jobs fail
 4. Consider a health check that identifies sources with stale/null `last_indexed_at`
+
+## Issue 7: SlowIndexing jobs don't show as "executing" in UI
+
+**Problem:** When `MediaCollectionIndexingWorker` (SlowIndexing) jobs start running, they spawn yt-dlp processes but fail to update their job state from `available` to `executing` in the database. This causes:
+
+1. No tasks visible in the frontend at `/#tab-active-tasks`
+2. Jobs appear stuck in `available` state even though yt-dlp is actively running
+3. Users have no visibility into what Pinchflat is currently doing
+
+**Observed behavior:**
+
+```bash
+# Database shows no executing jobs
+sqlite3 pinchflat.db "SELECT state, COUNT(*) FROM oban_jobs WHERE state = 'executing'"
+# Returns: (empty)
+
+# But yt-dlp processes are actively running
+ps aux | grep yt-dlp
+# Shows multiple yt-dlp processes for OutdoorBoys, USCSB, etc.
+```
+
+**Contrast with FastIndexing:** `FastIndexingWorker` jobs DO properly transition to `executing` state and show in the UI. Only `SlowIndexing` jobs have this issue.
+
+**Root cause hypothesis:** The SlowIndexing worker spawns an external yt-dlp process but the database state update either:
+
+1. Fails silently due to SQLite busy errors
+2. Happens in a transaction that doesn't commit before the long-running process starts
+3. Is not implemented for this worker type
+
+**Impact:**
+
+- Users think nothing is happening when indexing is actually in progress
+- No way to see progress or estimate completion time
+- Difficult to debug issues without visibility
+
+**Suggested fix:**
+
+1. Ensure job state is updated to `executing` BEFORE spawning the yt-dlp process
+2. Use a database transaction with proper busy_timeout to ensure the state change persists
+3. Add periodic heartbeat updates during long-running indexing operations
+4. Consider adding progress tracking (e.g., "indexed 50/500 videos")
+
+## Issue 8: Old download_cutoff_date causes unnecessary full channel scans
+
+**Problem:** The `download_cutoff_date` field on sources doesn't automatically update over time. Sources created months ago still have their original cutoff date, causing yt-dlp to scan through thousands of old videos on every index.
+
+**Example:** OutdoorBoys had `download_cutoff_date = 2025-11-08` even though it was March 2026, causing yt-dlp to check 4+ months of videos (~493 videos) on every indexing run.
+
+**Impact:**
+
+- Extremely slow indexing (hours instead of minutes)
+- Unnecessary YouTube API calls (risk of rate limiting)
+- High CPU usage from yt-dlp processing old video metadata
+
+**Observed timing:** With 40-second sleep intervals between requests, indexing 493 videos takes ~5.5 hours minimum.
+
+**Suggested fixes:**
+
+1. **Auto-advance cutoff date** - After successful indexing, update `download_cutoff_date` to a recent date (e.g., 7 days before the oldest video that was actually downloaded)
+2. **Use relative cutoff** - Instead of absolute dates, allow setting "download videos from last N days"
+3. **Add --break-on-existing consistently** - Ensure all indexing jobs use this flag to stop early when hitting known videos
+4. **UI warning** - Show a warning if cutoff date is very old
+
+**Manual fix:**
+
+```sql
+-- Update all sources to have cutoff date of 7 days ago
+UPDATE sources SET download_cutoff_date = date('now', '-7 days')
+WHERE download_cutoff_date < date('now', '-7 days');
+```
