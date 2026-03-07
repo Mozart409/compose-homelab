@@ -103,7 +103,7 @@ services:
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
   pinchflat:
-    image: ghcr.io/mozart409/pinchflat:v2026.3.4
+    image: ghcr.io/mozart409/pinchflat:v2026.3.7
     tty: true
     stdin_open: true
     container_name: pinchflat
@@ -391,7 +391,7 @@ services:
       - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
   netalertx:
     container_name: netalertx # The name when you docker contiainer ls
-    image: ghcr.io/jokob-sk/netalertx:26.2.6
+    image: ghcr.io/jokob-sk/netalertx:26.3.7
     stop_grace_period: 30s
     network_mode: ${NETALERTX_NETWORK_MODE:-host} # Use host networking for ARP scanning and other services
     read_only: true # Make the container filesystem read-only
