@@ -102,14 +102,52 @@ services:
       start_period: 30s
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+  gluetun:
+    image: qmcgaw/gluetun:v3.41.1
+    container_name: gluetun
+    restart: unless-stopped
+    stop_grace_period: 30s
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${PROTONVPN_WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${PROTONVPN_WIREGUARD_ADDRESSES}
+      - SERVER_COUNTRIES=${PROTONVPN_SERVER_COUNTRIES:-Netherlands}
+      - FIREWALL_OUTBOUND_SUBNETS=172.16.0.0/12 # Allow access to Docker networks
+      - TZ=Europe/Berlin
+      - HEALTH_TARGET_ADDRESS=cloudflare.com:443
+    volumes:
+      - ./gluetun:/gluetun
+    healthcheck:
+      test: [
+        "CMD",
+        "wget",
+        "--no-verbose",
+        "--tries=1",
+        "--spider",
+        "https://cloudflare.com",
+      ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - "wud.link.template=https://github.com/qdm12/gluetun/releases/tag/$${major}.$${minor}.$${patch}"
   pinchflat:
     image: ghcr.io/mozart409/pinchflat:v2026.3.7
     tty: true
     stdin_open: true
     container_name: pinchflat
-    network_mode: service:ts-pinchflat
+    network_mode: service:gluetun
     restart: unless-stopped
     stop_grace_period: 30s
+    depends_on:
+      - gluetun
     environment:
       - TZ=Europe/Berlin
       - ENABLE_PROMETHEUS=1
@@ -317,8 +355,9 @@ services:
       - net_admin
       - sys_module
     container_name: ts-pinchflat
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    network_mode: service:gluetun
+    depends_on:
+      - gluetun
     dns:
       - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
       - 1.1.1.1 # For external lookups.
