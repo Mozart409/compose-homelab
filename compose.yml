@@ -120,6 +120,7 @@ services:
       - FIREWALL_OUTBOUND_SUBNETS=172.16.0.0/12 # Allow access to Docker networks
       - TZ=Europe/Berlin
       - HEALTH_TARGET_ADDRESS=cloudflare.com:443
+      - BORINGPOLL_GLUETUNCOM=on
     volumes:
       - ./gluetun:/gluetun
     healthcheck:
