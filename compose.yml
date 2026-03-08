@@ -349,33 +349,6 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-  ts-pinchflat:
-    stop_grace_period: 30s
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-pinchflat
-    network_mode: service:gluetun
-    depends_on:
-      - gluetun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/pinchflat.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: pinchflat
-    image: tailscale/tailscale:v1.94.2
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-pinchflat-data/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
   ts-node-exporter:
     stop_grace_period: 30s
     cap_add:
