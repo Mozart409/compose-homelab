@@ -228,3 +228,120 @@ ps aux | grep yt-dlp
 UPDATE sources SET download_cutoff_date = date('now', '-7 days')
 WHERE download_cutoff_date < date('now', '-7 days');
 ```
+
+## Issue 9: Full channel indexing ignores retention period
+
+**Problem:** When a source has a short `retention_period_days` (e.g., 5-7 days), Pinchflat still performs a full channel index, scanning through potentially thousands of videos dating back to the original `download_cutoff_date`. This is extremely wasteful when only the most recent videos will ever be kept.
+
+**Example scenario:**
+
+- Source has `retention_period_days = 5`
+- Source has `download_cutoff_date = 2025-11-08` (4+ months ago)
+- yt-dlp scans through 500+ videos with 35-40 second sleep intervals
+- Total indexing time: 5+ hours
+- Only videos from the last ~8 days would ever be downloaded/retained
+
+**The math:**
+
+- With `--sleep-requests 40 --sleep-interval 35`, each video check takes ~35-40 seconds
+- 500 videos × 35 seconds = ~4.8 hours minimum
+- 99% of this work is wasted checking videos that will never be downloaded
+
+**Expected behavior:** Indexing should be bounded by the retention period, not the cutoff date. If retention is 5 days, there's no point scanning videos older than `retention_period_days + buffer` (e.g., 5 + 3 = 8 days).
+
+**Suggested fix:**
+
+1. **Calculate effective scan window** - When starting an index, compute:
+   ```
+   effective_cutoff = max(download_cutoff_date, now - retention_period_days - buffer_days)
+   ```
+   where `buffer_days` accounts for upload delays and timezone differences (e.g., 3 days)
+
+2. **Pass date filter to yt-dlp** - Use `--dateafter` flag to skip old videos entirely:
+   ```bash
+   yt-dlp --dateafter $(date -d '-8 days' +%Y%m%d) ...
+   ```
+
+3. **Use --break-on-existing more aggressively** - Stop indexing as soon as we hit a video we've already processed, since older videos won't be downloaded anyway
+
+4. **Add UI indicator** - Show estimated scan time based on channel size and effective date range
+
+**Impact of fix:**
+
+- Indexing time reduced from hours to minutes
+- Reduced YouTube API load (less rate limiting risk)
+- Lower CPU/memory usage
+- Faster queue throughput (more sources indexed per hour)
+
+**Related to:** Issue 8 (old download_cutoff_date), but this is about using retention_period as an additional bound, not just updating the cutoff date.
+
+## Issue 10: No visibility into active tasks or yt-dlp output in frontend
+
+**Problem:** The frontend provides no way to see what Pinchflat is currently doing. The "Active Tasks" tab (`/#tab-active-tasks`) is often empty even when yt-dlp processes are actively running. Users must SSH into the server and run `ps aux | grep yt-dlp` or query the database directly to understand system state.
+
+**Current situation:**
+
+- No live view of running yt-dlp processes
+- No output logs from yt-dlp commands
+- No visibility into Oban job queue state
+- SlowIndexing jobs don't appear in Active Tasks (see Issue 7)
+- Users have no idea if indexing is stuck, progressing, or completed
+
+**What users have to do today:**
+
+```bash
+# Check if anything is running
+docker exec pinchflat ps aux | grep yt-dlp
+
+# Check job queue state
+sqlite3 pinchflat.db "SELECT state, worker, COUNT(*) FROM oban_jobs GROUP BY state, worker"
+
+# Check which sources are being indexed
+sqlite3 pinchflat.db "SELECT id, args, attempt FROM oban_jobs WHERE state = 'executing'"
+```
+
+**Suggested improvements:**
+
+1. **Active Tasks panel** - Show all currently running operations:
+   - Source being indexed (with channel name, not just ID)
+   - Number of videos scanned / estimated total
+   - Time elapsed and estimated time remaining
+   - Current yt-dlp command being executed
+
+2. **Job Queue view** - Display Oban queue status:
+   - Jobs by state (available, executing, scheduled, completed, failed)
+   - Ability to cancel stuck jobs from UI
+   - Retry failed jobs with one click
+   - View job error messages
+
+3. **Recent Activity log** - Scrollable log of recent operations:
+   - Last N indexing completions with duration
+   - Last N downloads with file sizes
+   - Last N errors with stack traces
+   - Filterable by source/worker type
+
+4. **yt-dlp output streaming** - Real-time output from yt-dlp:
+   - Show current video being processed
+   - Display any warnings or errors
+   - Progress bar for downloads
+   - Rate limit warnings from YouTube
+
+5. **System health indicators**:
+   - Database size and WAL status
+   - Queue depth and processing rate
+   - Last successful index per source
+   - Sources with stale `last_indexed_at`
+
+**Implementation notes:**
+
+- Could use Phoenix LiveView for real-time updates
+- yt-dlp output could be captured and streamed via WebSocket
+- Oban provides telemetry events that could feed the UI
+- Consider a `/api/status` endpoint for programmatic access
+
+**Impact:**
+
+- Users can see what's happening without SSH access
+- Easier debugging of stuck/slow operations
+- Better understanding of system health
+- Reduced support burden (users can self-diagnose)
