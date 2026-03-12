@@ -142,7 +142,7 @@ services:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/qdm12/gluetun/releases/tag/$${major}.$${minor}.$${patch}"
   pinchflat:
-    image: ghcr.io/mozart409/pinchflat:dev
+    image: ghcr.io/mozart409/pinchflat:v2026.3.12
     tty: true
     stdin_open: true
     container_name: pinchflat
@@ -218,7 +218,7 @@ services:
     image: ghcr.io/linuxserver/jellyfin:10.11.6
     network_mode: service:ts-jellyfin
     labels:
-      - 'wud.tag.include=^\d+\.\d+\.\d+$'
+      - 'wud.tag.include=^\d{1,2}\.\d+\.\d+$'
       - "wud.link.template=https://github.com/linuxserver/docker-jellyfin/pkgs/container/jellyfin/versions"
     restart: unless-stopped
     volumes:
