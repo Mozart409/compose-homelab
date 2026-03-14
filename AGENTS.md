@@ -312,7 +312,7 @@ Sources must be deleted via API (not directly in database) to trigger background
 
 ```bash
 # Delete a source by ID (with file deletion)
-BASE_URL="https://pinchflat.dropbear-butterfly.ts.net"
+BASE_URL="http://192.168.2.100:8945"
 
 # Get session cookie and CSRF token
 curl -c /tmp/pf_cookies.txt -s "$BASE_URL/sources" > /tmp/pf_page.html
@@ -328,7 +328,7 @@ curl -b /tmp/pf_cookies.txt -X DELETE "$BASE_URL/sources/SOURCE_ID?delete_files=
 Sources are added via POST to `/sources` with form data.
 
 ```bash
-BASE_URL="http://192.168.2.100:8945/"
+BASE_URL="http://192.168.2.100:8945"
 
 # Get session cookie and CSRF token
 curl -c /tmp/pf_cookies.txt -s "$BASE_URL/sources/new" > /tmp/pf_page.html
