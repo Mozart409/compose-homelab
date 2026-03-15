@@ -379,6 +379,23 @@ ssh root@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db
 # Check background job status
 ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
   'SELECT state, worker, COUNT(*) FROM oban_jobs GROUP BY state, worker ORDER BY state'"
+
+# If Oban jobs stop running with "Database busy" errors
+# 1) Clear WAL + vacuum (safe):
+ssh root@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db 'PRAGMA wal_checkpoint(TRUNCATE); VACUUM;'"
+
+# 2) Requeue stuck executing jobs (replace IDs after listing):
+ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
+  'SELECT id, worker, attempt, inserted_at FROM oban_jobs WHERE state=\'executing\''"
+ssh root@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db \
+  \"UPDATE oban_jobs SET state='available', scheduled_at=datetime('now'), attempted_at=NULL WHERE id IN (<ids>);\""
+
+# 3) Restart service and watch counts drain:
+ssh root@homelab "cd /root/compose-homelab && docker compose restart pinchflat"
+ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
+  'SELECT state, worker, COUNT(*) FROM oban_jobs GROUP BY state, worker ORDER BY state'"
+
+# Note: If this recurs often, consider moving Pinchflat off SQLite to Postgres.
 ```
 
 ## Additional Notes
