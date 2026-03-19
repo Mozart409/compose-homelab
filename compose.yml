@@ -9,7 +9,7 @@ services:
       hofvarpnir_db:
         condition: service_healthy
     environment:
-      PORT: 8080
+      PORT: 3000
       HOST: 0.0.0.0
       MAX_CONCURRENT_DOWNLOADS: 3
       DOWNLOAD_TIMEOUT_HOURS: 4
@@ -19,7 +19,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@hofvarpnir_db:5432/hofvarpnir
       DEFAULT_OUTPUT_DIR: /var/lib/hofvarpnir/downloads
     ports:
-      - 8080:8080
+      - 3000:3000
     volumes:
       - ./hofvarpnir:/var/lib/hofvarpnir/downloads
   hofvarpnir_db:
