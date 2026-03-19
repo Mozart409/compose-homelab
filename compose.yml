@@ -4,7 +4,7 @@ services:
     container_name: hofvarpnir
     restart: unless-stopped
     pull_policy: always
-    stop_grace_period: 30s
+    stop_grace_period: 5s
     depends_on:
       hofvarpnir_db:
         condition: service_healthy
