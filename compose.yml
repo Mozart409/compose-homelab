@@ -1,4 +1,45 @@
 services:
+  hofvarpnir:
+    image: ghcr.io/mozart409/hofvarpnir:dev
+    container_name: hofvarpnir
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      hofvarpnir_db:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      HOST: 0.0.0.0
+      MAX_CONCURRENT_DOWNLOADS: 3
+      DOWNLOAD_TIMEOUT_HOURS: 4
+      MAX_DOWNLOAD_ATTEMPTS: 5
+      RATE_LIMIT_DELAY_SECS: 60
+      RUST_LOG: info,hofvarpnir=info,sqlx=warn
+      DATABASE_URL: postgresql://postgres:postgres@hofvarpnir_db:5432/hofvarpnir
+      DEFAULT_OUTPUT_DIR: /var/lib/hofvarpnir/downloads
+    ports:
+      - 8080:8080
+    volumes:
+      - ./hofvarpnir:/var/lib/hofvarpnir/downloads
+  hofvarpnir_db:
+    image: postgres:17-trixie
+    container_name: hofvarpnir_db
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+      - hofvarpnir_pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hofvarpnir
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 15s
+    labels:
+      - 'wud.tag.include=^\d+(\.\d+)?-trixie$$'
   tandoor:
     image: vabene1111/recipes:2.5.3
     container_name: tandoor
@@ -387,3 +428,4 @@ volumes:
   staticfiles:
   netalertx_data:
   tandoor_pg_data:
+  hofvarpnir_pg_data:
