@@ -203,7 +203,7 @@ services:
     restart: unless-stopped
     volumes:
       - ${PWD}/jellyfin/library:/config
-      - ${PWD}/youtube:/data/youtube
+      - ${PWD}/hofvarpnir/completed:/data/hofvarpnir
       - ${PWD}/movies:/data/my_movies
       - ${PWD}/blueray:/data/blueray
       - ${PWD}/series:/data/series
