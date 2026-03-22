@@ -1,0 +1,1 @@
+{\n  "$schema": "https://docs.renovatebot.com/renovate-schema.json",\n  "enabled": true,\n  "fileMatch": ["compose.yml"],\n  "dependencyDashboard": true,\n  "schedule": ["at any time"],\n  "labels": ["dependencies"]\n}
