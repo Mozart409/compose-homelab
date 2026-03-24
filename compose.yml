@@ -1,9 +1,8 @@
 services:
   hofvarpnir:
-    image: ghcr.io/mozart409/hofvarpnir:dev
+    image: ghcr.io/mozart409/hofvarpnir:0.1.4
     container_name: hofvarpnir
     restart: unless-stopped
-    pull_policy: always
     stop_grace_period: 5s
     depends_on:
       hofvarpnir_db:
