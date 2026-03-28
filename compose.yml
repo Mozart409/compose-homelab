@@ -1,6 +1,6 @@
 services:
   hofvarpnir:
-    image: ghcr.io/mozart409/hofvarpnir:0.1.7
+    image: ghcr.io/mozart409/hofvarpnir:0.1.8
     container_name: hofvarpnir
     restart: unless-stopped
     stop_grace_period: 5s
