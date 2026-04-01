@@ -1,7 +1,0 @@
-pre-commit:
-  parallel: true
-  commands:
-    dprint:
-      glob: "*.*"
-      run: dprint fmt --staged { staged_files }
-      stage_fixed: true
