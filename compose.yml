@@ -96,14 +96,7 @@ services:
     pid: host
     restart: unless-stopped
     healthcheck:
-      test: [
-        "CMD",
-        "wget",
-        "--no-verbose",
-        "--tries=1",
-        "--spider",
-        "http://localhost:9100/metrics",
-      ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9100/metrics"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -385,7 +378,7 @@ services:
       - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
   netalertx:
     container_name: netalertx # The name when you docker contiainer ls
-    image: ghcr.io/jokob-sk/netalertx:26.3.7
+    image: ghcr.io/jokob-sk/netalertx:26.3.15
     stop_grace_period: 30s
     network_mode: ${NETALERTX_NETWORK_MODE:-host} # Use host networking for ARP scanning and other services
     read_only: true # Make the container filesystem read-only
