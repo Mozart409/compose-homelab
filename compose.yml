@@ -41,6 +41,7 @@ services:
       - "tsbridge.service.port=3000"
       - "tsbridge.service.write_timeout=0s"
       - "tsbridge.service.flush_interval=-1ms"
+      - "tsbridge.service.tags=tag:homelab"
   hofvarpnir_db:
     image: postgres:17-trixie
     container_name: hofvarpnir_db
