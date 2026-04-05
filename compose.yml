@@ -140,6 +140,8 @@ services:
       - "tsbridge.enabled=true"
       - "tsbridge.service.name=node-exporter"
       - "tsbridge.service.port=9100"
+      - "tsbridge.service.write_timeout=0s"
+      - "tsbridge.service.flush_interval=-1ms"
       - "tsbridge.service.tags=tag:homelab"
   syncthing:
     image: lscr.io/linuxserver/syncthing:2.0.10
@@ -284,6 +286,10 @@ services:
       - "tsbridge.enabled=true"
       - "tsbridge.service.name=searxng"
       - "tsbridge.service.port=8080"
+      - "tsbridge.service.whois_enabled=true"
+      - "tsbridge.service.upstream_headers.X-Real-IP=127.0.0.1"
+      - "tsbridge.service.upstream_headers.X-Forwarded-For=127.0.0.1"
+      - "tsbridge.service.upstream_headers.X-Forwarded-Proto=https"
       - "tsbridge.service.tags=tag:homelab"
     restart: unless-stopped
     volumes:
