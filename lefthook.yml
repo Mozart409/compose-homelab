@@ -8,4 +8,4 @@ pre-commit:
 pre-push:
   commands:
     validate-compose:
-      run: docker compose config --quiet
+      run: podman compose config --quiet
