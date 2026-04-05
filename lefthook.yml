@@ -1,1 +1,11 @@
+pre-commit:
+  commands:
+    fmt:
+      glob: "*.{ts,json,md,toml,Dockerfile,css,html,yml,yaml}"
+      run: dprint fmt {staged_files}
+      stage_fixed: true
 
+pre-push:
+  commands:
+    validate-compose:
+      run: docker compose config --quiet
