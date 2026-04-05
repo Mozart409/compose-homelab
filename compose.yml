@@ -231,6 +231,8 @@ services:
       - "tsbridge.enabled=true"
       - "tsbridge.service.name=jellyfin"
       - "tsbridge.service.port=8096"
+      - "tsbridge.service.write_timeout=0s"
+      - "tsbridge.service.flush_interval=-1ms"
       - "tsbridge.service.tags=tag:homelab"
     restart: unless-stopped
     volumes:
