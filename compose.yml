@@ -68,7 +68,6 @@ services:
     container_name: tandoor
     restart: unless-stopped
     stop_grace_period: 30s
-    network_mode: service:ts-tandoor
     volumes:
       - staticfiles:/opt/recipes/staticfiles
       - ./mediafiles:/opt/recipes/mediafiles
@@ -90,6 +89,10 @@ services:
       POSTGRES_PASSWORD: abc123abc123
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=tandoor"
+      - "tsbridge.service.port=8080"
+      - "tsbridge.service.tags=tag:homelab"
   tandoor_db:
     image: postgres:18.0-alpine3.22
     container_name: tandoor_db
@@ -115,7 +118,6 @@ services:
     stop_grace_period: 30s
     command:
       - "--path.rootfs=/host"
-    network_mode: service:ts-node-exporter
     pid: host
     restart: unless-stopped
     healthcheck:
@@ -135,6 +137,10 @@ services:
       - "/:/host:ro,rslave"
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=node-exporter"
+      - "tsbridge.service.port=9100"
+      - "tsbridge.service.tags=tag:homelab"
   syncthing:
     image: lscr.io/linuxserver/syncthing:2.0.10
     container_name: syncthing
@@ -174,7 +180,6 @@ services:
     stop_grace_period: 30s
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    network_mode: service:ts-wud
     restart: unless-stopped
     healthcheck:
       test: curl --fail http://localhost:${WUD_SERVER_PORT:-3000}/health || exit 1
@@ -185,6 +190,10 @@ services:
     labels:
       - 'wud.tag.include=^\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/getwud/wud/releases/tag/$${major}.$${minor}.$${patch}"
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=wud"
+      - "tsbridge.service.port=3000"
+      - "tsbridge.service.tags=tag:homelab"
   tclip:
     container_name: tclip
     stop_grace_period: 30s
@@ -205,8 +214,6 @@ services:
     stop_grace_period: 30s
     tty: true
     stdin_open: true
-    depends_on:
-      - ts-jellyfin
     environment:
       - PUID=0
       - PGID=0
@@ -218,10 +225,13 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
       timeout: 30s
     image: ghcr.io/linuxserver/jellyfin:10.11.7
-    network_mode: service:ts-jellyfin
     labels:
       - 'wud.tag.include=^\d{1,2}\.\d+\.\d+$'
       - "wud.link.template=https://github.com/linuxserver/docker-jellyfin/pkgs/container/jellyfin/versions"
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=jellyfin"
+      - "tsbridge.service.port=8096"
+      - "tsbridge.service.tags=tag:homelab"
     restart: unless-stopped
     volumes:
       - ${PWD}/jellyfin/library:/config
@@ -236,7 +246,6 @@ services:
     image: valkey/valkey:9.0.3-alpine3.23
     restart: unless-stopped
     stop_grace_period: 30s
-    network_mode: service:ts-searxng
     command: valkey-server --bind 0.0.0.0
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
@@ -250,8 +259,6 @@ services:
     container_name: searxng
     stop_grace_period: 30s
     depends_on:
-      ts-searxng:
-        condition: service_started
       valkey-searxng:
         condition: service_healthy
     environment:
@@ -272,140 +279,13 @@ services:
       - homepage.description=Meta search engine
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "wud.link.template=https://github.com/searxng/searxng/releases/tag/$${major}.$${minor}.$${patch}"
-    network_mode: service:ts-searxng
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=searxng"
+      - "tsbridge.service.port=8080"
+      - "tsbridge.service.tags=tag:homelab"
     restart: unless-stopped
     volumes:
       - ${PWD}/searxng:/etc/searxng
-  ts-jellyfin:
-    stop_grace_period: 30s
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-jellyfin
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/jellyfin.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: jellyfin
-    image: tailscale/tailscale:v1.94.2
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-jellyfin/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-  ts-searxng:
-    stop_grace_period: 30s
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-searxng
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/searxng.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: searxng
-    image: tailscale/tailscale:v1.94.2
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-searxng/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-  ts-wud:
-    stop_grace_period: 30s
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-wud
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/wud.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: wud
-    image: tailscale/tailscale:v1.94.2
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-wud-data/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-  ts-node-exporter:
-    stop_grace_period: 30s
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-node-exporter
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/node-exporter.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: node-exporter
-    image: tailscale/tailscale:v1.94.2
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-node-exporter-data/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
-  ts-tandoor:
-    stop_grace_period: 30s
-    cap_add:
-      - net_admin
-      - sys_module
-    container_name: ts-tandoor
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    dns:
-      - 100.100.100.100 # For tailnet address (<mach>.<tailnet>.ts.net) lookups.
-      - 1.1.1.1 # For external lookups.
-    environment:
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      # - "TS_EXTRA_ARGS=--advertise-tags=tag:container"
-      - "TS_SERVE_CONFIG=/config/tandoor.json"
-      - "TS_STATE_DIR=/var/lib/tailscale"
-      - "TS_USERSPACE=false"
-    hostname: tandoor
-    image: tailscale/tailscale:v1.94.2
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/tailscale-tandoor-data/state:/var/lib/tailscale
-      - ${PWD}/config:/config
-    labels:
-      - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
-      - "wud.link.template=https://github.com/tailscale/tailscale/releases/tag/$${major}.$${minor}.$${patch}"
   netalertx:
     container_name: netalertx # The name when you docker contiainer ls
     image: ghcr.io/jokob-sk/netalertx:26.3.15

@@ -31,7 +31,7 @@ brand:
   #     About: "https://searxng.org"
 
 valkey:
-  url: valkey://localhost:6379/0
+  url: valkey://valkey-searxng:6379/0
 
 search:
   # Filter results. 0: None, 1: Moderate, 2: Strict
