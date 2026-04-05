@@ -1,4 +1,20 @@
 services:
+  tsbridge:
+    image: ghcr.io/jtdowney/tsbridge:0.14
+    container_name: tsbridge
+    command: ["--provider", "docker"]
+    restart: unless-stopped
+    stop_grace_period: 30s
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - tsbridge_state:/var/lib/tsbridge
+    environment:
+      - TS_OAUTH_CLIENT_ID=${TS_OAUTH_CLIENT_ID}
+      - TS_OAUTH_CLIENT_SECRET=${TS_OAUTH_CLIENT_SECRET}
+    labels:
+      - "tsbridge.tailscale.oauth_client_id_env=TS_OAUTH_CLIENT_ID"
+      - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
+      - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
   hofvarpnir:
     image: ghcr.io/mozart409/hofvarpnir:0.1.8
     container_name: hofvarpnir
@@ -17,10 +33,14 @@ services:
       RUST_LOG: info,hofvarpnir=info,sqlx=warn
       DATABASE_URL: postgresql://postgres:postgres@hofvarpnir_db:5432/hofvarpnir
       DEFAULT_OUTPUT_DIR: /var/lib/hofvarpnir/downloads
-    ports:
-      - 3000:3000
     volumes:
       - ./hofvarpnir:/var/lib/hofvarpnir/downloads
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=hofvarpnir"
+      - "tsbridge.service.port=3000"
+      - "tsbridge.service.write_timeout=0s"
+      - "tsbridge.service.flush_interval=-1ms"
   hofvarpnir_db:
     image: postgres:17-trixie
     container_name: hofvarpnir_db
@@ -429,3 +449,4 @@ volumes:
   netalertx_data:
   tandoor_pg_data:
   hofvarpnir_pg_data:
+  tsbridge_state:

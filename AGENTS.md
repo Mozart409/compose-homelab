@@ -398,6 +398,77 @@ ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config
 # Note: If this recurs often, consider moving Pinchflat off SQLite to Postgres.
 ```
 
+### tsbridge (Tailscale Reverse Proxy)
+
+tsbridge is a tsnet-powered reverse proxy that exposes Docker services on the Tailnet via container labels — replacing per-service Tailscale sidecars.
+
+**Docs:**
+
+- Repository: https://github.com/jtdowney/tsbridge
+- Docker labels reference: https://github.com/jtdowney/tsbridge/blob/main/docs/docker-labels.md
+- Configuration reference: https://github.com/jtdowney/tsbridge/blob/main/docs/configuration-reference.md
+
+**How it works:**
+
+1. tsbridge runs with `--provider docker` and watches the Docker socket for label changes
+2. Containers with `tsbridge.enabled=true` are automatically proxied onto the tailnet
+3. Each service gets its own hostname: `https://<name>.<tailnet>.ts.net`
+4. Requires Tailscale OAuth credentials (not auth keys)
+
+**tsbridge container labels (on the tsbridge service itself):**
+
+```yaml
+labels:
+  - "tsbridge.tailscale.oauth_client_id_env=TS_OAUTH_CLIENT_ID"
+  - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
+  - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
+  - "tsbridge.tailscale.default_tags=tag:server" # optional, must match OAuth client tag
+  - "tsbridge.tailscale.oauth_preauthorized=false" # optional, default true
+  - "tsbridge.global.metrics_addr=:9090" # optional
+  - "tsbridge.global.write_timeout=30s" # optional
+```
+
+**Service container labels:**
+
+```yaml
+labels:
+  # Required
+  - "tsbridge.enabled=true"
+  - "tsbridge.service.port=8080" # recommended over backend_addr
+
+  # Optional
+  - "tsbridge.service.name=custom-name" # default: container name
+  - "tsbridge.service.backend_addr=myservice:8080" # alternative to port
+  - "tsbridge.service.whois_enabled=true" # add Tailscale-User-* headers
+  - "tsbridge.service.tags=tag:api" # override default_tags
+  - "tsbridge.service.listen_addr=0.0.0.0:9090" # custom listen address
+  - "tsbridge.service.insecure_skip_verify=true" # skip TLS verify for HTTPS backends
+
+  # SSE / streaming (required for long-lived connections)
+  - "tsbridge.service.write_timeout=0s"
+  - "tsbridge.service.flush_interval=-1ms"
+
+  # Custom headers
+  - "tsbridge.service.downstream_headers.X-Frame-Options=DENY"
+  - "tsbridge.service.upstream_headers.X-Service-Name=api"
+  - "tsbridge.service.remove_downstream=Server,X-Powered-By"
+```
+
+**Key notes:**
+
+- Use `port` not `backend_addr` with `localhost` — localhost inside tsbridge is the tsbridge container, not your service
+- Labels are only read at container start — restart the service container to apply changes
+- All containers must share a Docker network (automatic in a single compose file)
+- OAuth credentials are set up at https://login.tailscale.com/admin/settings/oauth
+
+**Migrating from Tailscale sidecars:**
+
+1. Remove the `ts-<service>` sidecar container
+2. Remove `network_mode: service:ts-<service>` and `depends_on: ts-<service>` from the app
+3. Add tsbridge labels to the app container
+4. Remove the sidecar's Tailscale serve config JSON from `config/`
+5. Remove the sidecar's state volume
+
 ## Additional Notes
 
 - **Nix support**: Project includes `flake.nix` for Nix development shell
