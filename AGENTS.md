@@ -169,22 +169,36 @@ ts-service:
 
 ### Git Commit Style
 
-Follow Conventional Commits with optional gitmoji:
+Follow [Conventional Commits](https://www.conventionalcommits.org/) strictly.
+
+**Format**: `<type>(<optional scope>): <description>`
 
 ```
 feat: add new service to compose stack
 fix: correct healthcheck for jellyfin
 docs: update README with new service
-feat: :arrow_up: upgrade package versions
+chore: upgrade flake.lock
+feat(jellyfin): add hardware transcoding
 fix(wud): correct version matching labels
 ```
 
-**Patterns**:
+**Types**:
 
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `docs:` - Documentation only
-- `feat(scope):` - Feature with scope
+- `feat` — new feature or capability
+- `fix` — bug fix
+- `docs` — documentation only
+- `chore` — maintenance, upgrades, tooling, config (no feature change)
+- `refactor` — code restructuring without behavior change
+- `ci` — CI/CD pipeline changes
+- `style` — formatting, whitespace (no logic change)
+- `perf` — performance improvement
+
+**Rules**:
+
+- Subject line: imperative mood, lowercase, no period, max ~72 chars
+- Scope is optional — use the service name when the change is scoped to one service (e.g., `fix(jellyfin):`)
+- Body (optional): explain _why_, not _what_ — the diff shows what changed
+- Breaking changes: add `!` after type/scope (e.g., `feat!: remove legacy auth`)
 - Optional gitmoji: `:arrow_up:` for upgrades, `:memo:` for docs
 
 ### Error Handling
