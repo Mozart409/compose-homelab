@@ -5,6 +5,8 @@ services:
     command: ["--provider", "docker"]
     restart: unless-stopped
     stop_grace_period: 30s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - tsbridge_state:/var/lib/tsbridge
@@ -445,6 +447,11 @@ services:
         max-size: "10m" # Rotate log files after they reach 10MB
         max-file: "3" # Keep a maximum of 3 log files
     restart: unless-stopped
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=netalertx"
+      - "tsbridge.service.backend_addr=host.docker.internal:20211"
+      - "tsbridge.service.tags=tag:homelab"
 volumes:
   staticfiles:
   netalertx_data:
