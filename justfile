@@ -3,19 +3,19 @@ set dotenv-load
 default: up
 
 up: clear git-pull
-	docker compose up -d --build --remove-orphans
+	podman compose up -d --build --remove-orphans
 
 down: clear
-	docker compose down
+	podman compose down
 
 clear:
 	clear
 
 pull: clear 
-	docker compose pull
+	podman compose pull
 
 restart: clear 
-	docker compose restart
+	podman compose restart
 
 fmt: 
 	dprint fmt
