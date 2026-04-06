@@ -34,13 +34,14 @@
         lefthook
         cocogitto
         just
-        opencode
         podman
         podman-compose
         playwright-driver.browsers
+        git
       ];
 
       linuxPackages = with pkgs; [
+        opencode
       ];
 
       darwinPackages = with pkgs; [
