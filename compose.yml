@@ -18,7 +18,7 @@ services:
       - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
       - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
   hofvarpnir:
-    image: ghcr.io/mozart409/hofvarpnir:0.1.11
+    image: ghcr.io/mozart409/hofvarpnir:0.1.12
     container_name: hofvarpnir
     restart: unless-stopped
     stop_grace_period: 5s
@@ -35,6 +35,10 @@ services:
       RUST_LOG: info,hofvarpnir=info,sqlx=warn
       DATABASE_URL: postgresql://postgres:postgres@hofvarpnir_db:5432/hofvarpnir
       DEFAULT_OUTPUT_DIR: /var/lib/hofvarpnir/downloads
+      METRICS_ENABLED: true
+      LOKI_URL: https://homelab-otel.dropbear-butterfly.ts.net/loki
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://homelab-otel.dropbear-butterfly.ts.net/tempo
+      OTEL_SERVICE_NAME: hofvarpnir
     volumes:
       - ./hofvarpnir:/var/lib/hofvarpnir/downloads
     labels:
