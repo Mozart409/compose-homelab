@@ -37,6 +37,7 @@ services:
       DEFAULT_OUTPUT_DIR: /var/lib/hofvarpnir/downloads
       METRICS_ENABLED: true
       LOKI_URL: https://homelab-otel.dropbear-butterfly.ts.net/loki
+      API_BASE_URL: https://hofvarpnir.dropbear-butterfly.ts.net
       OTEL_EXPORTER_OTLP_ENDPOINT: https://homelab-otel.dropbear-butterfly.ts.net/tempo
       OTEL_SERVICE_NAME: hofvarpnir
     volumes:
