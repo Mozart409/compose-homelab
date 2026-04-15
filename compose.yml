@@ -212,7 +212,7 @@ services:
       - ENABLE_LINE_NUMBERS=true
       - ENABLE_WORD_WRAP=true
     restart: unless-stopped
-    image: ghcr.io/tailscale-dev/tclip:latest@sha256:c6fc003a7ce24eff96a36b6055b316c307a798399555dba545452e6aeafca3c7
+    image: ghcr.io/tailscale-dev/tclip:latest
     labels:
       - "wud.tag.include=latest"
       - "wud.watch.digest=true"
