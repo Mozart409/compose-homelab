@@ -6,8 +6,6 @@ This document provides coding guidelines and operational instructions for AI age
 
 This is a Docker Compose-based homelab stack that runs various services (Jellyfin, SearXNG, Pinchflat, Tandoor, etc.) proxied through Tailscale Serve. All services are containerized and managed via Docker Compose.
 
-**Production System**: The production environment is accessible via `ssh root@homelab`
-
 ## Build, Lint, and Test Commands
 
 ### Primary Commands (using just)
@@ -280,16 +278,16 @@ Jellyfin can show "phantom" entries in the frontend for media files that have be
 
 ```bash
 # 1. Stop Jellyfin
-ssh root@homelab "cd /root/compose-homelab && docker compose stop jellyfin"
+ssh aiagent@homelab "cd /root/compose-homelab && docker compose stop jellyfin"
 
 # 2. Find orphaned entries (check paths that don't exist on filesystem)
-ssh root@homelab 'sqlite3 /root/compose-homelab/jellyfin/library/data/data/jellyfin.db "SELECT Name, Path FROM BaseItems WHERE Path LIKE '\''/data/youtube/shows/ShowName%'\''"'
+ssh aiagent@homelab 'sqlite3 /root/compose-homelab/jellyfin/library/data/data/jellyfin.db "SELECT Name, Path FROM BaseItems WHERE Path LIKE '\''/data/youtube/shows/ShowName%'\''"'
 
 # 3. Delete orphaned entries
-ssh root@homelab "sqlite3 /root/compose-homelab/jellyfin/library/data/data/jellyfin.db \"DELETE FROM BaseItems WHERE Path LIKE '/data/youtube/shows/ShowName%'\""
+ssh aiagent@homelab "sqlite3 /root/compose-homelab/jellyfin/library/data/data/jellyfin.db \"DELETE FROM BaseItems WHERE Path LIKE '/data/youtube/shows/ShowName%'\""
 
 # 4. Restart Jellyfin
-ssh root@homelab "cd /root/compose-homelab && docker compose start jellyfin"
+ssh aiagent@homelab "cd /root/compose-homelab && docker compose start jellyfin"
 ```
 
 **Important notes:**
@@ -380,7 +378,7 @@ curl -b /tmp/pf_cookies.txt -X POST "$BASE_URL/sources" \
 #### Listing Sources
 
 ```bash
-ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
+ssh aiagent@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
   'SELECT id, custom_name, original_url, retention_period_days FROM sources ORDER BY id'"
 ```
 
@@ -388,25 +386,25 @@ ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config
 
 ```bash
 # Vacuum database to reclaim space after deletions
-ssh root@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db 'VACUUM;'"
+ssh aiagent@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db 'VACUUM;'"
 
 # Check background job status
-ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
+ssh aiagent@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
   'SELECT state, worker, COUNT(*) FROM oban_jobs GROUP BY state, worker ORDER BY state'"
 
 # If Oban jobs stop running with "Database busy" errors
 # 1) Clear WAL + vacuum (safe):
-ssh root@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db 'PRAGMA wal_checkpoint(TRUNCATE); VACUUM;'"
+ssh aiagent@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db 'PRAGMA wal_checkpoint(TRUNCATE); VACUUM;'"
 
 # 2) Requeue stuck executing jobs (replace IDs after listing):
-ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
+ssh aiagent@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
   'SELECT id, worker, attempt, inserted_at FROM oban_jobs WHERE state=\'executing\''"
-ssh root@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db \
+ssh aiagent@homelab "sqlite3 /root/compose-homelab/pinchflat/config/db/pinchflat.db \
   \"UPDATE oban_jobs SET state='available', scheduled_at=datetime('now'), attempted_at=NULL WHERE id IN (<ids>);\""
 
 # 3) Restart service and watch counts drain:
-ssh root@homelab "cd /root/compose-homelab && docker compose restart pinchflat"
-ssh root@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
+ssh aiagent@homelab "cd /root/compose-homelab && docker compose restart pinchflat"
+ssh aiagent@homelab "sqlite3 -header -column /root/compose-homelab/pinchflat/config/db/pinchflat.db \
   'SELECT state, worker, COUNT(*) FROM oban_jobs GROUP BY state, worker ORDER BY state'"
 
 # Note: If this recurs often, consider moving Pinchflat off SQLite to Postgres.
