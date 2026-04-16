@@ -42,6 +42,7 @@
 
       linuxPackages = with pkgs; [
         opencode
+        claude-code
       ];
 
       darwinPackages = with pkgs; [
