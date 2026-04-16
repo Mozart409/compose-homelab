@@ -28,10 +28,10 @@ services:
     environment:
       PORT: 3000
       HOST: 0.0.0.0
-      MAX_CONCURRENT_DOWNLOADS: 3
-      DOWNLOAD_TIMEOUT_HOURS: 4
-      MAX_DOWNLOAD_ATTEMPTS: 5
-      RATE_LIMIT_DELAY_SECS: 60
+      MAX_CONCURRENT_DOWNLOADS: 1
+      DOWNLOAD_TIMEOUT_HOURS: 6
+      MAX_DOWNLOAD_ATTEMPTS: 3
+      RATE_LIMIT_DELAY_SECS: 180
       RUST_LOG: info,hofvarpnir=info,sqlx=warn
       DATABASE_URL: postgresql://postgres:postgres@hofvarpnir_db:5432/hofvarpnir
       DEFAULT_OUTPUT_DIR: /var/lib/hofvarpnir/downloads
