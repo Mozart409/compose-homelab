@@ -35,11 +35,11 @@ services:
       RUST_LOG: info,hofvarpnir=info,sqlx=warn
       DATABASE_URL: postgresql://postgres:postgres@hofvarpnir_db:5432/hofvarpnir
       DEFAULT_OUTPUT_DIR: /var/lib/hofvarpnir/downloads
+      API_BASE_URL: https://hofvarpnir.dropbear-butterfly.ts.net
       METRICS_ENABLED: true
       LOKI_URL: https://homelab-otel.dropbear-butterfly.ts.net/loki
-      API_BASE_URL: https://hofvarpnir.dropbear-butterfly.ts.net
-      OTEL_EXPORTER_OTLP_ENDPOINT: https://homelab-otel.dropbear-butterfly.ts.net
-      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://homelab-otel.dropbear-butterfly.ts.net:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: hofvarpnir
     volumes:
       - ./hofvarpnir:/var/lib/hofvarpnir/downloads
