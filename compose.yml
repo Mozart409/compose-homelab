@@ -347,6 +347,17 @@ services:
       - "tsbridge.service.name=netalertx"
       - "tsbridge.service.backend_addr=host.docker.internal:20211"
       - "tsbridge.service.tags=tag:homelab"
+  netalertx-graphql:
+    image: busybox:1.37
+    container_name: netalertx-graphql
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    stop_grace_period: 5s
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.name=netalertx-graphql"
+      - "tsbridge.service.backend_addr=host.docker.internal:20212"
+      - "tsbridge.service.tags=tag:homelab"
 volumes:
   staticfiles:
   netalertx_data:
