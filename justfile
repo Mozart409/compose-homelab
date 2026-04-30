@@ -1,21 +1,23 @@
 set dotenv-load
 
+compose := if `command -v docker 2>/dev/null` != "" { "docker compose" } else { "podman compose" }
+
 default: up
 
 up: clear git-pull
-	podman compose up -d --build --remove-orphans
+	{{ compose }} up -d --build --remove-orphans
 
 down: clear
-	podman compose down
+	{{ compose }} down
 
 clear:
 	clear
 
-pull: clear 
-	podman compose pull
+pull: clear
+	{{ compose }} pull
 
-restart: clear 
-	podman compose restart
+restart: clear
+	{{ compose }} restart
 
 fmt: 
 	dprint fmt
