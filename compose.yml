@@ -363,6 +363,7 @@ services:
     restart: unless-stopped
     stop_grace_period: 5s
     labels:
+      - 'wud.tag.include=^\d+\.\d+$$'
       - "tsbridge.enabled=true"
       - "tsbridge.service.name=netalertx-graphql"
       - "tsbridge.service.backend_addr=host.docker.internal:20212"
