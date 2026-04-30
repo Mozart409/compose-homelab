@@ -18,7 +18,7 @@ services:
       - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
       - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
   hofvarpnir:
-    image: ghcr.io/mozart409/hofvarpnir:0.1.14
+    image: ghcr.io/mozart409/hofvarpnir:0.1.15
     container_name: hofvarpnir
     restart: unless-stopped
     stop_grace_period: 5s
@@ -41,6 +41,15 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://homelab-otel.dropbear-butterfly.ts.net:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: hofvarpnir
+      # OIDC Authentication (optional - disabled if OIDC_ISSUER not set)
+      OIDC_ISSUER: ${HOF_OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${HOF_OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${HOF_OIDC_CLIENT_SECRET:-}
+      OIDC_SCOPES: ${HOF_OIDC_SCOPES:-openid,profile,email}
+      OIDC_AUTO_PROVISION: ${HOF_OIDC_AUTO_PROVISION:-true}
+      OIDC_REDIRECT_BASE_URL: ${HOF_OIDC_REDIRECT_BASE_URL:-}
+      OIDC_LOGOUT_REDIRECT: ${HOF_OIDC_LOGOUT_REDIRECT:-false}
+      OIDC_DISCOVERY_TIMEOUT: ${HOF_OIDC_DISCOVERY_TIMEOUT:-30}
     volumes:
       - ./hofvarpnir:/var/lib/hofvarpnir/downloads
     labels:
