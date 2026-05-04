@@ -18,7 +18,7 @@ services:
       - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
       - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
   hofvarpnir:
-    image: ghcr.io/mozart409/hofvarpnir:0.1.16
+    image: ghcr.io/mozart409/hofvarpnir:0.1.17
     container_name: hofvarpnir
     restart: unless-stopped
     stop_grace_period: 5s
@@ -312,7 +312,7 @@ services:
       - ${PWD}/searxng:/etc/searxng
   netalertx:
     container_name: netalertx # The name when you docker contiainer ls
-    image: ghcr.io/jokob-sk/netalertx:26.4.6
+    image: ghcr.io/jokob-sk/netalertx:26.5.4
     stop_grace_period: 30s
     network_mode: ${NETALERTX_NETWORK_MODE:-host} # Use host networking for ARP scanning and other services
     read_only: true # Make the container filesystem read-only
