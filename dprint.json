@@ -6,9 +6,7 @@
   "dockerfile": {},
   "malva": {},
   "markup": {},
-  "yaml": {
-    "preferSingleLine": true
-  },
+  "yaml": {},
   "excludes": [
     "**/node_modules",
     "**/*-lock.json"
