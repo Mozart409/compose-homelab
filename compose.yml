@@ -18,8 +18,8 @@ services:
       - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
       - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
   hofvarpnir:
-    # image: ghcr.io/mozart409/hofvarpnir:0.1.19
-    image: homelab-harbor.dropbear-butterfly.ts.net/oyabu/hofvarpnir@sha256:39a17a391ab850312b7537b9ac608b1d7db92d9008065476f8a22cf88cf94e75
+    image: ghcr.io/mozart409/hofvarpnir:0.1.25
+    # image: homelab-harbor.dropbear-butterfly.ts.net/oyabu/hofvarpnir@sha256:39a17a391ab850312b7537b9ac608b1d7db92d9008065476f8a22cf88cf94e75
     container_name: hofvarpnir
     restart: unless-stopped
     stop_grace_period: 5s
