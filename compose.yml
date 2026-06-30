@@ -60,7 +60,7 @@ services:
       - "tsbridge.service.flush_interval=-1ms"
       - "tsbridge.service.tags=tag:homelab"
   hofvarpnir_db:
-    image: postgres:18.4-alpine3.23
+    image: postgres:18.4-alpine3.24
     container_name: hofvarpnir_db
     restart: unless-stopped
     stop_grace_period: 30s
@@ -154,7 +154,7 @@ services:
     labels:
       - 'wud.tag.include=^v\d+\.\d+\.\d+$$'
       - "tsbridge.enabled=true"
-      - "tsbridge.service.name=node-exporter"
+      - "tsbridge.service.name=jellyfin-node-exporter"
       - "tsbridge.service.port=9100"
       - "tsbridge.service.write_timeout=0s"
       - "tsbridge.service.flush_interval=-1ms"
