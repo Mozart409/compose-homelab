@@ -18,7 +18,7 @@ services:
       - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
       - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
   hofvarpnir:
-    image: ghcr.io/mozart409/hofvarpnir:0.2.0
+    image: ghcr.io/mozart409/hofvarpnir:0.2.3
     container_name: hofvarpnir
     restart: unless-stopped
     stop_grace_period: 5s
@@ -80,55 +80,6 @@ services:
       start_period: 15s
     labels:
       - 'wud.tag.include=^\d+\.\d+-alpine'
-  tandoor:
-    image: vabene1111/recipes:2.6.11
-    container_name: tandoor
-    restart: unless-stopped
-    stop_grace_period: 30s
-    volumes:
-      - staticfiles:/opt/recipes/staticfiles
-      - ./mediafiles:/opt/recipes/mediafiles
-    depends_on:
-      - tandoor_db
-    environment:
-      TZ: Europe/Berlin
-      TANDOOR_PORT: 8080
-      # https://github.com/TandoorRecipes/recipes/issues/3478
-      ALLOWED_HOSTS: tandoor.dropbear-butterfly.ts.net,127.0.0.1
-      SECRET_KEY: Ex5PEs6AB+tcLAo9JSWZh5AwR2eDdIGyp1Ahsgqvcma0pj9bzj
-      SOCIAL_PROVIDERS: ${TANDOOR_SOCIAL_PROVIDERS}
-      SOCIALACCOUNT_PROVIDERS: ${TANDOOR_SOCIALACCOUNT_PROVIDERS}
-      DB_ENGINE: django.db.backends.postgresql
-      POSTGRES_HOST: tandoor_db
-      POSTGRES_DB: tandoor
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: tandoor
-      POSTGRES_PASSWORD: abc123abc123
-    labels:
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.name=tandoor"
-      - "tsbridge.service.port=8080"
-      - "tsbridge.service.tags=tag:homelab"
-  tandoor_db:
-    image: postgres:18.0-alpine3.22
-    container_name: tandoor_db
-    restart: unless-stopped
-    stop_grace_period: 30s
-    volumes:
-      - tandoor_pg_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: tandoor
-      POSTGRES_PASSWORD: abc123abc123
-      POSTGRES_DB: tandoor
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER"]
-      interval: 10s
-      timeout: 5s
-      retries: 2
-      start_period: 15s
-    labels:
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
   node-exporter:
     image: quay.io/prometheus/node-exporter:v1.11.1
     container_name: node_exporter
@@ -212,21 +163,6 @@ services:
       - "tsbridge.service.name=wud"
       - "tsbridge.service.port=3000"
       - "tsbridge.service.tags=tag:homelab"
-  tclip:
-    container_name: tclip
-    stop_grace_period: 30s
-    volumes:
-      - ./tclip_storage:/data
-    environment:
-      - DATA_DIR=/data
-      - "TS_AUTHKEY=${TS_AUTH_KEY}"
-      - ENABLE_LINE_NUMBERS=true
-      - ENABLE_WORD_WRAP=true
-    restart: unless-stopped
-    image: ghcr.io/tailscale-dev/tclip:latest
-    labels:
-      - "wud.tag.include=latest"
-      - "wud.watch.digest=true"
   jellyfin:
     container_name: jellyfin
     stop_grace_period: 30s
@@ -312,7 +248,5 @@ services:
     volumes:
       - ${PWD}/searxng:/etc/searxng
 volumes:
-  staticfiles:
-  tandoor_pg_data:
   hofvarpnir_pg_data:
   tsbridge_state:
