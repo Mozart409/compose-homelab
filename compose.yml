@@ -17,69 +17,6 @@ services:
       - "tsbridge.tailscale.oauth_client_id_env=TS_OAUTH_CLIENT_ID"
       - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
       - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
-  hofvarpnir:
-    image: ghcr.io/mozart409/hofvarpnir:0.2.4
-    container_name: hofvarpnir
-    restart: unless-stopped
-    stop_grace_period: 5s
-    depends_on:
-      hofvarpnir_db:
-        condition: service_healthy
-    environment:
-      PORT: 3000
-      HOST: 0.0.0.0
-      MAX_CONCURRENT_DOWNLOADS: 1
-      DOWNLOAD_TIMEOUT_HOURS: 9
-      MAX_DOWNLOAD_ATTEMPTS: 2
-      RATE_LIMIT_DELAY_SECS: 600
-      RUST_LOG: info,hofvarpnir=info,sqlx=warn
-      DATABASE_URL: postgresql://postgres:postgres@hofvarpnir_db:5432/hofvarpnir
-      DEFAULT_OUTPUT_DIR: /var/lib/hofvarpnir/downloads
-      API_BASE_URL: https://hofvarpnir.dropbear-butterfly.ts.net
-      METRICS_ENABLED: true
-      LOKI_URL: https://homelab-otel.dropbear-butterfly.ts.net/loki
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://homelab-otel.dropbear-butterfly.ts.net:4317
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_SERVICE_NAME: hofvarpnir
-      # OIDC Authentication (optional - disabled if OIDC_ISSUER not set)
-      OIDC_ISSUER: ${HOF_OIDC_ISSUER:-}
-      OIDC_CLIENT_ID: ${HOF_OIDC_CLIENT_ID:-}
-      OIDC_CLIENT_SECRET: ${HOF_OIDC_CLIENT_SECRET:-}
-      OIDC_SCOPES: ${HOF_OIDC_SCOPES:-openid,profile,email}
-      OIDC_AUTO_PROVISION: ${HOF_OIDC_AUTO_PROVISION:-true}
-      OIDC_REDIRECT_BASE_URL: ${HOF_OIDC_REDIRECT_BASE_URL:-}
-      OIDC_LOGOUT_REDIRECT: ${HOF_OIDC_LOGOUT_REDIRECT:-false}
-      OIDC_DISCOVERY_TIMEOUT: ${HOF_OIDC_DISCOVERY_TIMEOUT:-30}
-    volumes:
-      - ./hofvarpnir:/var/lib/hofvarpnir/downloads
-    labels:
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.name=hofvarpnir"
-      - "tsbridge.service.port=3000"
-      - "tsbridge.service.write_timeout=0s"
-      - "tsbridge.service.flush_interval=-1ms"
-      - "tsbridge.service.tags=tag:homelab"
-  hofvarpnir_db:
-    image: postgres:18.4-alpine3.24
-    container_name: hofvarpnir_db
-    restart: unless-stopped
-    stop_grace_period: 30s
-    ports:
-      - "127.0.0.1:5432:5432" # Bind to localhost only for security
-    volumes:
-      - hofvarpnir_pg_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: hofvarpnir
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER"]
-      interval: 10s
-      timeout: 5s
-      retries: 2
-      start_period: 15s
-    labels:
-      - 'wud.tag.include=^\d+\.\d+-alpine'
   node-exporter:
     image: quay.io/prometheus/node-exporter:v1.11.1
     container_name: node_exporter
@@ -110,37 +47,6 @@ services:
       - "tsbridge.service.write_timeout=0s"
       - "tsbridge.service.flush_interval=-1ms"
       - "tsbridge.service.tags=tag:homelab"
-  syncthing:
-    image: lscr.io/linuxserver/syncthing:2.0.10
-    container_name: syncthing
-    stop_grace_period: 30s
-    hostname: homelab #optional
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=Etc/UTC
-    volumes:
-      - ./syncthing/config:/config
-      - ./blueray:/blueray
-      - ./movies:/movies
-      - ./youtube:/youtube
-      - ./series:/series
-      - ./tv:/tv
-      - ./audio:/audio
-    ports:
-      - 8384:8384
-      - 22000:22000/tcp
-      - 22000:22000/udp
-      - 21027:21027/udp
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8384/rest/noauth/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    labels:
-      - 'wud.tag.include=^\d+\.\d+\.\d+$$'
   whatsupdocker:
     image: ghcr.io/getwud/wud:8.2.2
     tty: true
@@ -163,40 +69,6 @@ services:
       - "tsbridge.service.name=wud"
       - "tsbridge.service.port=3000"
       - "tsbridge.service.tags=tag:homelab"
-  jellyfin:
-    container_name: jellyfin
-    stop_grace_period: 30s
-    tty: true
-    stdin_open: true
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=Etc/CET
-      - JELLYFIN_PublishedServerUrl=https://jellyfin.dropbear-butterfly.ts.net
-    healthcheck:
-      interval: 1m
-      retries: 3
-      test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
-      timeout: 30s
-    image: ghcr.io/linuxserver/jellyfin:10.11.11
-    labels:
-      - 'wud.tag.include=^\d{1,2}\.\d+\.\d+$'
-      - "wud.link.template=https://github.com/linuxserver/docker-jellyfin/pkgs/container/jellyfin/versions"
-      - "tsbridge.enabled=true"
-      - "tsbridge.service.name=jellyfin"
-      - "tsbridge.service.port=8096"
-      - "tsbridge.service.write_timeout=0s"
-      - "tsbridge.service.flush_interval=-1ms"
-      - "tsbridge.service.tags=tag:homelab"
-    restart: unless-stopped
-    volumes:
-      - ${PWD}/jellyfin/library:/config
-      - ${PWD}/hofvarpnir/completed:/data/hofvarpnir
-      - ${PWD}/movies:/data/my_movies
-      - ${PWD}/blueray:/data/blueray
-      - ${PWD}/series:/data/series
-      - ${PWD}/tv:/data/tv
-      - ${PWD}/audio:/data/audio
   valkey-searxng:
     container_name: valkey-searxng
     image: valkey/valkey:9.1.0-alpine3.23
@@ -248,5 +120,4 @@ services:
     volumes:
       - ${PWD}/searxng:/etc/searxng
 volumes:
-  hofvarpnir_pg_data:
   tsbridge_state:
