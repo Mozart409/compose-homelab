@@ -18,7 +18,7 @@ services:
       - "tsbridge.tailscale.oauth_client_secret_env=TS_OAUTH_CLIENT_SECRET"
       - "tsbridge.tailscale.state_dir=/var/lib/tsbridge"
   node-exporter:
-    image: quay.io/prometheus/node-exporter:v1.11.1
+    image: quay.io/prometheus/node-exporter:v1.12.1
     container_name: node_exporter
     stop_grace_period: 30s
     command:
@@ -48,7 +48,7 @@ services:
       - "tsbridge.service.flush_interval=-1ms"
       - "tsbridge.service.tags=tag:homelab"
   whatsupdocker:
-    image: ghcr.io/getwud/wud:8.2.2
+    image: ghcr.io/getwud/wud:8.3.0
     tty: true
     stdin_open: true
     container_name: wud
